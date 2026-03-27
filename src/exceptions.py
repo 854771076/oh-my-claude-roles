@@ -1,6 +1,6 @@
 class OhRolesError(Exception):
     """Base exception for oh-roles"""
-    code: str
+    code: str = ""
     message: str
 
     def __init__(self, message: str):
