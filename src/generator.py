@@ -2,7 +2,8 @@ import asyncio
 import re
 from typing import List, Tuple
 import tenacity
-from litellm import acompletion
+from langchain_core.messages import HumanMessage
+from src.services.llm.factory import create_llm
 from .config import settings
 from .models import RoleMeta, PackageMeta, ToolComponent
 from .prompts import PROMPTS
@@ -19,18 +20,9 @@ class ToolGenerator:
     """Generate tool components using LLM"""
 
     def __init__(self):
-        self.provider = settings.llm_provider
-        self.model = settings.llm_model
-        self.api_key = settings.llm_api_key
-        self.timeout = settings.llm_timeout
-        self.max_retries = settings.llm_max_retries
+        self.llm = create_llm()
         self.concurrency = settings.llm_concurrency
         self.validator = OutputValidator()
-
-        if not self.api_key:
-            raise LLMConfigError(
-                "LLM API Key not configured. Set OH_ROLES_LLM_API_KEY environment variable."
-            )
 
     async def generate_package(
         self,
@@ -48,7 +40,7 @@ class ToolGenerator:
 
         async def generate_one(comp_type: str) -> ToolComponent | None:
             async with semaphore:
-                return await self._generate_component(comp_type, source_content, role)
+                return await self._generate_component(comp_type, source_content, role, components)
 
         tasks = [generate_one(comp_type) for comp_type in components]
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -79,8 +71,8 @@ class ToolGenerator:
             role=role,
             version=role.version,
             generated_at=datetime.now(),
-            llm_provider=self.provider,
-            llm_model=self.model,
+            llm_provider=settings.llm_provider,
+            llm_model=settings.llm_model,
             components=[c.type for c in generated_components],
         )
 
@@ -91,9 +83,10 @@ class ToolGenerator:
         component_type: str,
         source_content: str,
         role: RoleMeta,
+        all_components: list[str],
     ) -> List[ToolComponent] | ToolComponent | None:
         """Generate single component with validation"""
-        prompt = self._build_prompt(component_type, source_content, role)
+        prompt = self._build_prompt(component_type, source_content, role, all_components)
 
         try:
             content = await self._call_llm(prompt)
@@ -116,14 +109,28 @@ class ToolGenerator:
         component_type: str,
         source_content: str,
         role: RoleMeta,
+        all_components: list[str],
     ) -> str:
         """Build prompt from template"""
         template = PROMPTS[component_type]
-        return template.format(
-            role_name=role.display_name,
-            role_description=role.description,
-            source_content=source_content,
-        )
+        template_vars = {
+            "role_name": role.display_name,
+            "role_description": role.description,
+            "source_content": source_content,
+        }
+        # Add component list for claude_md
+        if component_type == "claude_md":
+            component_descriptions = {
+                "claude_md": "CLAUDE.md - 项目核心指令文件",
+                "hooks": "Hooks - 钩子脚本，自动执行任务",
+                "commands": "Commands - 自定义斜杠命令",
+                "agents": "Agents - 子代理配置",
+                "rules": "Rules - 规则文件",
+                "skills": "Skills - 技能文件",
+            }
+            lines = [f"- {comp}: {component_descriptions.get(comp, comp)}" for comp in all_components]
+            template_vars["component_list"] = "\n".join(lines)
+        return template.format(**template_vars)
 
     @tenacity.retry(
         stop=tenacity.stop_after_attempt(3),
@@ -134,14 +141,8 @@ class ToolGenerator:
     async def _call_llm(self, prompt: str) -> str:
         """Call LLM API with retries"""
         try:
-            response = await acompletion(
-                model=f"{self.provider}/{self.model}",
-                messages=[{"role": "user", "content": prompt}],
-                api_key=self.api_key,
-                base_url=settings.llm_base_url,
-                timeout=self.timeout,
-            )
-            return response.choices[0].message.content.strip()
+            response = await self.llm.ainvoke([HumanMessage(content=prompt)])
+            return response.content.strip()
         except TimeoutError:
             raise LLMTimeoutError("LLM call timed out")
         except Exception as e:
