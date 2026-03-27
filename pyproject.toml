@@ -68,3 +68,6 @@ line_length = 88
 [tool.ruff]
 line-length = 88
 select = ["E", "W", "F", "I"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
