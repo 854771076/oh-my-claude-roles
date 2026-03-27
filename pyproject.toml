@@ -32,6 +32,17 @@ dependencies = [
 [project.scripts]
 oh-roles = "src.cli:app"
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "pytest-asyncio>=0.21",
+    "black>=24.0",
+    "isort>=5.0",
+    "mypy>=1.0",
+    "ruff>=0.1",
+]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
@@ -40,3 +51,20 @@ addopts = "-v --cov=src --cov-report=term --cov-report=html"
 [tool.coverage.run]
 source = ["src"]
 omit = ["*/__init__.py", "tests/*"]
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+extend-exclude = '''
+docs
+*/tests/*
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.ruff]
+line-length = 88
+select = ["E", "W", "F", "I"]
