@@ -9,6 +9,9 @@ from src.exceptions import (
     GenerationFailedError,
     ValidationError,
     InstallError,
+    LLMProviderError,
+    RoleDesignError,
+    DocumentSaveError,
 )
 
 def test_exception_codes():
@@ -20,6 +23,9 @@ def test_exception_codes():
     assert GenerationFailedError.code == "GENERATION_FAILED"
     assert ValidationError.code == "VALIDATION_ERROR"
     assert InstallError.code == "INSTALL_ERROR"
+    assert LLMProviderError.code == "LLM_PROVIDER_ERROR"
+    assert RoleDesignError.code == "ROLE_DESIGN_ERROR"
+    assert DocumentSaveError.code == "DOCUMENT_SAVE_ERROR"
 
 def test_exception_message():
     err = RoleNotFoundError("role not found")
@@ -36,6 +42,9 @@ def test_all_exceptions_inherit_from_base():
     assert issubclass(GenerationFailedError, OhRolesError)
     assert issubclass(ValidationError, OhRolesError)
     assert issubclass(InstallError, OhRolesError)
+    assert issubclass(LLMProviderError, OhRolesError)
+    assert issubclass(RoleDesignError, OhRolesError)
+    assert issubclass(DocumentSaveError, OhRolesError)
 
 
 def test_base_exception_instantiation():
@@ -60,6 +69,9 @@ def test_all_exceptions_message_and_formatting():
         (GenerationFailedError, "GENERATION_FAILED"),
         (ValidationError, "VALIDATION_ERROR"),
         (InstallError, "INSTALL_ERROR"),
+        (LLMProviderError, "LLM_PROVIDER_ERROR"),
+        (RoleDesignError, "ROLE_DESIGN_ERROR"),
+        (DocumentSaveError, "DOCUMENT_SAVE_ERROR"),
     ]
 
     for exc_class, expected_code in exceptions:

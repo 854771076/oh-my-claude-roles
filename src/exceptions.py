@@ -46,3 +46,21 @@ class ValidationError(OhRolesError):
 class InstallError(OhRolesError):
     """Installation failed (permission, disk full)"""
     code = "INSTALL_ERROR"
+
+
+class LLMProviderError(OhRolesError):
+    """Unsupported LLM provider"""
+    code = "LLM_PROVIDER_ERROR"
+    message = "Unsupported LLM provider"
+
+
+class RoleDesignError(OhRolesError):
+    """Error during interactive role design"""
+    code = "ROLE_DESIGN_ERROR"
+    message = "Error during interactive role design"
+
+
+class DocumentSaveError(OhRolesError):
+    """Failed to save role document"""
+    code = "DOCUMENT_SAVE_ERROR"
+    message = "Failed to save role document"
