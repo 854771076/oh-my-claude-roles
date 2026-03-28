@@ -1,4 +1,6 @@
+import asyncio
 from typing import Optional
+from pathlib import Path
 import typer
 from rich.console import Console
 from rich.table import Table
@@ -14,6 +16,8 @@ from .packager import PackageCache
 from .generator import ToolGenerator
 from .installer import ToolInstaller
 from .exceptions import OhRolesError
+from src.services.llm.factory import create_llm
+from src.services.llm.role_design.cli_chat import run_interactive
 
 app = typer.Typer(
     name="oh-roles",
@@ -116,9 +120,9 @@ def install(
 
         with console.status("[bold green]正在生成工具包...[/bold green]"):
             try:
-                meta, components_to_install = generator.generate_package(
+                meta, components_to_install = asyncio.run(generator.generate_package(
                     role, selected_components
-                )
+                ))
                 cache.save(meta, components_to_install)
             except OhRolesError as e:
                 console.print(f"[red]生成失败: {e.message}[/red]")
@@ -201,7 +205,7 @@ def generate(
 
     with console.status("[bold green]正在生成工具包...[/bold green]"):
         try:
-            meta, components = generator.generate_package(role)
+            meta, components = asyncio.run(generator.generate_package(role))
             cache = PackageCache()
             cache.save(meta, components)
         except OhRolesError as e:
@@ -312,6 +316,21 @@ def clean(
 def show_version():
     """显示版本信息"""
     console.print(f"Oh-My-Claude-Roles v{__version__}")
+
+
+@app.command()
+def create(
+    output: Optional[Path] = None,
+    verbose: bool = False,
+):
+    """Create a new role document interactively with AI guidance.
+
+    Starts an interactive conversation that guides you through designing
+    a complete role specification document, and saves the final result.
+    """
+    llm = create_llm()
+    output_path = str(output) if output else None
+    run_interactive(llm, output_path)
 
 
 def main():
