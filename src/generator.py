@@ -4,11 +4,12 @@ from typing import List, Tuple
 import tenacity
 from langchain_core.messages import HumanMessage
 from src.services.llm.factory import create_llm
-from .config import settings
-from .models import RoleMeta, PackageMeta, ToolComponent
-from .prompts import PROMPTS
-from .validator import OutputValidator
-from .exceptions import (
+from src.services.llm.generation.workflow import create_generation_workflow
+from src.config import settings
+from src.models import RoleMeta, PackageMeta, ToolComponent
+from src.prompts import PROMPTS
+from src.validator import OutputValidator
+from src.exceptions import (
     LLMConfigError,
     LLMTimeoutError,
     LLMRateLimitError,
@@ -19,10 +20,17 @@ from .exceptions import (
 class ToolGenerator:
     """Generate tool components using LLM"""
 
-    def __init__(self):
+    def __init__(self, use_workflow: bool = False):
         self.llm = create_llm()
         self.concurrency = settings.llm_concurrency
         self.validator = OutputValidator()
+        self.use_workflow = use_workflow
+        if self.use_workflow:
+            self.workflow = create_generation_workflow(
+                llm=self.llm,
+                validator=self.validator,
+                concurrency=self.concurrency
+            )
 
     async def generate_package(
         self,
@@ -30,6 +38,16 @@ class ToolGenerator:
         components: List[str] | None = None,
     ) -> Tuple[PackageMeta, List[ToolComponent]]:
         """Generate complete tool package for a role"""
+        if self.use_workflow:
+            return await self.generate_package_with_workflow(role, components)
+        return await self.generate_package_legacy(role, components)
+
+    async def generate_package_legacy(
+        self,
+        role: RoleMeta,
+        components: List[str] | None = None,
+    ) -> Tuple[PackageMeta, List[ToolComponent]]:
+        """Generate complete tool package for a role (legacy implementation)"""
         components = components or settings.default_components
 
         # Read source content
@@ -237,3 +255,28 @@ class ToolGenerator:
             "skills": f"skills/{filename}",
         }
         return path_map.get(component_type, filename)
+
+    async def generate_package_with_workflow(
+        self,
+        role: RoleMeta,
+        components: List[str] | None = None,
+    ) -> Tuple[PackageMeta, List[ToolComponent]]:
+        """Generate complete tool package for a role using LangGraph workflow"""
+        components = components or settings.default_components
+
+        initial_state = {
+            "role": role,
+            "requested_components": components,
+            "source_content": None,
+            "generated_components": [],
+            "validated_components": [],
+            "failed_components": [],
+            "package_meta": None,
+            "error": None,
+            "__llm": self.llm,
+            "__validator": self.validator,
+            "__concurrency": self.concurrency,
+        }
+
+        final_state = await self.workflow.ainvoke(initial_state)
+        return final_state["package_meta"], final_state["validated_components"]
