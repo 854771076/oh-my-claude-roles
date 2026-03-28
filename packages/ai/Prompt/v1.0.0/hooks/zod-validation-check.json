@@ -1,0 +1,13 @@
+{
+  "name": "Zod Schema完整性检查",
+  "description": "检查所有提示词的输入输出都定义了有效的Zod Schema，且类型一致",
+  "triggers": ["PreCommit"],
+  "matcher": "*.prompt.ts",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "npx tsx scripts/check-zod-integrity.ts",
+      "timeout": 30
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "提示词类型安全检查",
+  "description": "检查所有新修改的提示词是否符合类型安全规范，确保输入输出都定义了Zod Schema",
+  "triggers": ["PreCommit"],
+  "matcher": "*.prompt.ts",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "npx tsx scripts/check-prompt-types.ts",
+      "timeout": 30
+    }
+  ]
+}

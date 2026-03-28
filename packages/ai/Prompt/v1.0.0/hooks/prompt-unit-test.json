@@ -1,0 +1,13 @@
+{
+  "name": "提示词单元测试执行",
+  "description": "执行修改后提示词的单元测试，确保符合业务规则和格式要求",
+  "triggers": ["PreCommit"],
+  "matcher": "*.prompt.ts",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "npx vitest run __tests__/prompts/ --changed",
+      "timeout": 60
+    }
+  ]
+}

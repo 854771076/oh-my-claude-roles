@@ -1,0 +1,13 @@
+{
+  "name": "提示词文件结构检查",
+  "description": "检查提示词文件是否符合企业规范，包含所有强制模块，使用.prompt.ts后缀",
+  "triggers": ["PreToolUse", "PreCommit"],
+  "matcher": "*.prompt.ts",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "npx tsx scripts/check-prompt-structure.ts",
+      "timeout": 20
+    }
+  ]
+}

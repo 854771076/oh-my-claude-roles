@@ -1,0 +1,23 @@
+{
+  "role": {
+    "name": "Prompt",
+    "category": "ai",
+    "display_name": "AI提示词开发企业级规范",
+    "description": "**文档版本**: v1.0.0",
+    "source_path": "C:\\Users\\Administrator\\Desktop\\oh-my-claude-roles\\roles\\ai\\Prompt.md",
+    "source_hash": "e0543210c98d5dfd",
+    "tags": [],
+    "version": "1.0.0"
+  },
+  "version": "1.0.0",
+  "generated_at": "2026-03-29T00:24:44.780411",
+  "llm_provider": "openai",
+  "llm_model": "ark-code-latest",
+  "components": [
+    "commands",
+    "skills",
+    "hooks",
+    "agents",
+    "claude_md"
+  ]
+}

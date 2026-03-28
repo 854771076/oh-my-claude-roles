@@ -1,0 +1,12 @@
+{
+  "name": "提示词安全扫描",
+  "description": "执行提示词安全扫描，检查注入攻击风险、违规内容、权限漏洞",
+  "triggers": ["PreCommit"],
+  "hooks": [
+    {
+      "type": "command",
+      "command": "npx tsx scripts/run-security-scan.ts",
+      "timeout": 60
+    }
+  ]
+}

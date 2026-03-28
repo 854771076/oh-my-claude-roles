@@ -1,0 +1,12 @@
+{
+  "name": "提交信息规范检查",
+  "description": "检查Git提交信息是否符合Conventional Commits规范",
+  "triggers": ["PreCommit"],
+  "hooks": [
+    {
+      "type": "command",
+      "command": "npx --yes commitlint --edit $1",
+      "timeout": 10
+    }
+  ]
+}
