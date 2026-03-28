@@ -17,11 +17,11 @@
 
 输出格式：
 每个文件:
-## 文件名: commands/{filename}.md
+## 文件名: commands/{{filename}}.md
 ---
-name: {command_name}
-description: {description}
-trigger: /{command_name}
+name: {{command_name}}
+description: {{description}}
+trigger: /{{command_name}}
 ---
 
 # 命令标题

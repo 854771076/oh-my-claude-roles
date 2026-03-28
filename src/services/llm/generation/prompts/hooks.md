@@ -21,7 +21,7 @@
 
 输出格式：
 每个文件:
-## 文件名: hooks/{filename}.json
+## 文件名: hooks/{{filename}}.json
 ```json
-{...}
+{{...}}
 ```
