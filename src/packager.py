@@ -87,8 +87,8 @@ class PackageCache:
 
         # Save each component by type directory
         for comp in components:
-            # comp.filename already includes the type subdirectory from _get_target_path
-            comp_file = cache_dir / comp.filename
+            # comp.target_path already includes the type subdirectory like "hooks/filename.json"
+            comp_file = cache_dir / comp.target_path
             comp_file.parent.mkdir(parents=True, exist_ok=True)
             comp_file.write_text(comp.content, encoding="utf-8")
             logger.debug(

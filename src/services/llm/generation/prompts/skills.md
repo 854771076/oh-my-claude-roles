@@ -17,6 +17,7 @@
 5. **强制类型安全**：所有输入输出必须配合Zod Schema，禁止纯自然语言约束格式
 
 要求：
+
 1. 分析文档中的专业知识、最佳实践、常见模式
 2. 封装为可复用的技能模块，每个技能聚焦单一能力
 3. 每个技能单独一个 Markdown 文件，包含 frontmatter
@@ -27,13 +28,18 @@
 
 输出格式：
 每个文件:
-## 文件名: skills/{{filename}}.md
+
+## 文件名: skills.md
+
 ---
+
 name: {{skill_name}}
 description: {{skill_description}}
 triggers:
-  - pattern: 触发正则
-  - pattern: 另一个触发正则
+
+- pattern: 触发正则
+- pattern: 另一个触发正则
+
 ---
 
 # 技能标题

@@ -1,0 +1,13 @@
+{
+  "name": "Dependency Security Audit",
+  "description": "Check for security vulnerabilities in dependencies before merge",
+  "triggers": ["PreCommit"],
+  "matcher": "package.json pnpm-lock.yaml",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "pnpm audit",
+      "timeout": 120
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "vue3-build-check",
+  "description": "检查项目能否正常构建",
+  "triggers": ["PostToolUse"],
+  "matcher": "*.{vue,ts,tsx,vite.config.ts}",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "npm run build",
+      "timeout": 300
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "vue3-unit-test",
+  "description": "运行单元测试，确保核心业务逻辑正确性",
+  "triggers": ["PreCommit"],
+  "matcher": "*.{vue,ts}",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "npx vitest run --coverage",
+      "timeout": 300
+    }
+  ]
+}

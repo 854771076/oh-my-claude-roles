@@ -1,22 +1,17 @@
-You are collecting information for a role specification. Current collected information:
+你正在收集角色规范的信息。当前已收集的信息：
 
-Current step: {current_step}
-Collected so far:
+当前步骤: {current_step}
+已收集信息:
 {collected_info}
 
-Ask the next question to the user to collect the missing information. The steps are:
+请向用户提问，收集下一个缺失的信息。步骤顺序：
 
-1. name - Already collected: {name}
-2. display_name - Already collected: {display_name}
-3. description - Already collected: {description}
-4. category - Already collected: {category}
-5. tags - Already collected: {tags}
-6. target_domain - Already collected: {target_domain}
-7. tech_stack - Already collected: {tech_stack}
-8. coding_standards - Already collected: {coding_standards}
-9. project_scale - Already collected: {project_scale} (example: "medium team of 5-20 developers")
-10. team_size - Already collected: {team_size} (example: "6 developers, 1 PM, 1 designer")
-11. compliance_requirements - Already collected: {compliance_requirements} (example: "GDPR, SOC 2 compliance required")
-12. custom_content - Already collected: {custom_content}
+1. name - 已收集: {name}（角色唯一标识，用于文件名）
+2. display_name - 已收集: {display_name}（角色显示名称，用于界面展示）
+3. description - 已收集: {description}（角色的简短描述）
+4. category - 已收集: {category}（分类，例如 backend/frontend/devops/productivity）
+5. tags - 已收集: {tags}（标签，用逗号分隔）
+6. target_domain - 已收集: {target_domain}（目标领域和使用场景描述）
 
-Only ask for the next missing piece of information. Keep it clear and concise. Give an example if helpful.
+只询问下一个缺失的信息。保持问题清晰简洁。如果有帮助，可以给出示例。
+请用中文提问。

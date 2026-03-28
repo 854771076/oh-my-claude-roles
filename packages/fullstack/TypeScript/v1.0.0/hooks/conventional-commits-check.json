@@ -1,0 +1,13 @@
+{
+  "name": "Conventional Commits Check",
+  "description": "Validate commit message follows Conventional Commits specification",
+  "triggers": ["PreCommit"],
+  "matcher": "Bash",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "npx --yes @commitlint/cli@latest --edit $1",
+      "timeout": 60
+    }
+  ]
+}

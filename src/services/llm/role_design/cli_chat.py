@@ -37,10 +37,7 @@ class CLIRoleDesignChat:
 
             # Get next question
             current_step = state.current_step
-            if current_step == "start" or current_step == "ask_name":
-                # First step already asked in welcome
-                pass
-            else:
+            if current_step != "start" and current_step != "ask_name":
                 # Generate question with LLM
                 from .nodes import generate_question
                 question = await generate_question(state, self.llm)

@@ -1,0 +1,13 @@
+{
+  "name": "Next.js Server Component Check",
+  "description": "Check for forbidden client-side usage in App Router server components",
+  "triggers": ["PreCommit"],
+  "matcher": "app/**/*.tsx components/**/*.tsx",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "grep -r -l \"useState\\|useEffect\\|useRouter\\|window\\|document\" --include=\"*.tsx\" app/ | grep -v \"'use client'\" && echo \"ERROR: Found client-side API in server component, add 'use client' directive or extract to client component\" || exit 0",
+      "timeout": 60
+    }
+  ]
+}

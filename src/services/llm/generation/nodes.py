@@ -84,6 +84,7 @@ async def parallel_generation_node(state: "GenerationWorkflowState") -> dict:
         async with semaphore:
             logger.info(f"Generating component: {comp_type}")
             prompt = build_prompt(comp_type, source_content, role, all_components, generated_components)
+            logger.debug(prompt)
             logger.debug(f"Prompt built: {len(prompt)} characters")
             try:
                 content = await call_llm_with_retry(prompt)
@@ -275,7 +276,21 @@ def parse_response(component_type: str, content: str, role: RoleMeta) -> List[To
         for i in range(0, len(parts), 2):
             if i + 1 >= len(parts):
                 break
-            filename = parts[i].strip()
+            raw_filename = parts[i].strip()
+            # Clean filename: take only first line, remove invalid characters
+            filename = raw_filename.split('\n')[0]
+            # Remove invalid filename characters for Windows
+            filename = re.sub(r'[<>:"/\\|?*]', '', filename)
+            # Replace spaces with dashes
+            filename = filename.replace(' ', '-')
+            # If filename is empty after cleaning, use default
+            if not filename:
+                ext = _get_extension(component_type)
+                filename = f"{role.name}.{ext}"
+            # If filename is still too long (contains content), use default
+            if len(filename) > 100:
+                ext = _get_extension(component_type)
+                filename = f"{role.name}.{ext}"
             file_content = parts[i + 1].strip()
             # Remove wrapping code block if present
             # Handle both ``` and ```language formats
@@ -321,6 +336,10 @@ def _get_extension(component_type: str) -> str:
 
 def _get_target_path(component_type: str, filename: str) -> str:
     """Get target installation path"""
+    # If filename already contains a path (includes /), use it as-is
+    # This prevents double nesting when LLM already output the component type prefix
+    if '/' in filename:
+        return filename
     path_map = {
         "claude_md": "CLAUDE.md",
         "hooks": f"hooks/{filename}",

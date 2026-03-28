@@ -2,27 +2,7 @@ Now generate the complete role specification document in Markdown format with YA
 
 All collected information:
 
-name: {state.name}
-display_name: {state.display_name}
-description: {state.description}
-category: {state.category}
-tags: {', '.join(state.tags)}
-target_domain: {state.target_domain}
-tech_stack:
-
-{state.tech_stack}
-
-coding_standards:
-
-{state.coding_standards}
-
-project_scale: {state.project_scale}
-team_size: {state.team_size}
-compliance_requirements: {state.compliance_requirements}
-
-custom_content:
-
-{state.custom_content}
+{collected_info}
 
 Requirements:
 - Start with YAML frontmatter containing name, display_name, description, category, tags, version 1.0.0

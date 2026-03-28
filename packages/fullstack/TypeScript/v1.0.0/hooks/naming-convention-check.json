@@ -1,0 +1,13 @@
+{
+  "name": "File Naming Convention Check",
+  "description": "Enforce file naming conventions for TypeScript + Next.js project",
+  "triggers": ["PreCommit"],
+  "matcher": "*",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "npx --yes naming-convention-check@latest \\\n--component 'PascalCase.tsx' \\\n--hook 'camelCase.ts' \\\n--api 'kebab-case.ts' \\\n--type 'PascalCase.ts' \\\n--directory 'kebab-case'",
+      "timeout": 60
+    }
+  ]
+}

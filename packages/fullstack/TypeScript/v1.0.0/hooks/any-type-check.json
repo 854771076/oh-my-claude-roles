@@ -1,0 +1,13 @@
+{
+  "name": "Disallow any Type Check",
+  "description": "Check for forbidden any type in TypeScript code",
+  "triggers": ["PreCommit"],
+  "matcher": "*.{ts,tsx}",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "grep -r \": any\" --include=\"*.ts\" --include=\"*.tsx\" src/ && echo \"ERROR: Found forbidden 'any' type, use 'unknown' instead\" || exit 0",
+      "timeout": 60
+    }
+  ]
+}

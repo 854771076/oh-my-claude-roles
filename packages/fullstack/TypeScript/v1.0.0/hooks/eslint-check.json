@@ -1,0 +1,13 @@
+{
+  "name": "ESLint Code Check",
+  "description": "Run ESLint check before code commit to enforce TypeScript and code style rules",
+  "triggers": ["PreCommit"],
+  "matcher": "*.{ts,tsx,js,jsx}",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "pnpm eslint --fix . --ext .ts,.tsx",
+      "timeout": 120
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "Environment Variables Check",
+  "description": "Validate environment variables before deployment",
+  "triggers": ["PreToolUse"],
+  "matcher": ".env*",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "node -r esbuild-register scripts/validate-env.ts",
+      "timeout": 60
+    }
+  ]
+}

@@ -18,13 +18,3 @@
 输出格式：
 
 ## 文件名: rules.yaml
-
-```yaml
-name: {{rule_set_name}}
-version: "1.0"
-rules:
-  - id: rule-id
-    description: 规则描述
-    pattern: 正则表达式
-    severity: error
-```

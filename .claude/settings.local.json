@@ -56,7 +56,10 @@
       "Bash(python test_examples.py)",
       "Bash(pytest tests/test_packager.py::test_save_and_get -v)",
       "Bash(python -m flake8 src/ tests/ --select=I001,E501 --max-line-length=88 --exclude=\"tests/*\")",
-      "Bash(pytest tests/test_packager.py -v)"
+      "Bash(pytest tests/test_packager.py -v)",
+      "Bash(ruff check:*)",
+      "Bash(python -m ruff check src/services/llm/role_design/nodes.py --fix)",
+      "Bash(python -m pycodestyle src/services/llm/role_design/nodes.py)"
     ]
   }
 }

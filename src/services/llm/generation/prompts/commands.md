@@ -7,6 +7,7 @@
 {source_content}
 
 要求：
+
 1. 分析文档中的常见开发任务、工作流程、质量检查步骤
 2. 为每个常见任务设计一个斜杠命令
 3. 每个命令单独一个 Markdown 文件，包含 frontmatter
@@ -17,13 +18,5 @@
 
 输出格式：
 每个文件:
-## 文件名: commands/{{filename}}.md
----
-name: {{command_name}}
-description: {{description}}
-trigger: /{{command_name}}
----
 
-# 命令标题
-
-详细描述...
+## 文件名: commands.md

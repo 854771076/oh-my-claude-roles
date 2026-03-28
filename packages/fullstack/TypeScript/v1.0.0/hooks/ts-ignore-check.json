@@ -1,0 +1,13 @@
+{
+  "name": "Disallow @ts-ignore Check",
+  "description": "Check for forbidden @ts-ignore, require @ts-expect-error with explanation",
+  "triggers": ["PreCommit"],
+  "matcher": "*.{ts,tsx}",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "grep -r \"// @ts-ignore\" --include=\"*.ts\" --include=\"*.tsx\" src/ && echo \"ERROR: Found forbidden '@ts-ignore', use '@ts-expect-error' with comment explanation instead\" || exit 0",
+      "timeout": 60
+    }
+  ]
+}
