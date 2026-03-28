@@ -7,6 +7,7 @@
 {source_content}
 
 要求：
+
 1. 提取文档中的编码规范、禁止项、强制要求
 2. 转化为可自动检查的规则
 3. 使用 YAML 格式，每个规则包含: id, description, pattern, severity
@@ -15,7 +16,9 @@
 6. 遵守 Claude Code Rules YAML schema
 
 输出格式：
-## 文件名: rules/{{filename}}.yaml
+
+## 文件名: rules.yaml
+
 ```yaml
 name: {{rule_set_name}}
 version: "1.0"

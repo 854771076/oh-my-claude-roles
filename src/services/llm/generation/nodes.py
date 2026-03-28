@@ -32,7 +32,10 @@ async def read_source_node(state: "GenerationWorkflowState") -> dict:
 
 
 async def parallel_generation_node(state: "GenerationWorkflowState") -> dict:
-    """Generate all requested components in parallel."""
+    """Generate all requested components: generate all non-claude_md first, then generate claude_md last.
+
+    This ensures CLAUDE.md can index all other generated files.
+    """
     import asyncio
 
     role = state["role"]
@@ -41,7 +44,12 @@ async def parallel_generation_node(state: "GenerationWorkflowState") -> dict:
     llm = state["_llm"]
     concurrency = state["_concurrency"]
 
-    logger.info(f"Workflow starting parallel generation: {len(requested)} components, concurrency={concurrency} for {role.category}/{role.name}")
+    # Split components: generate all non-claude_md first
+    other_components = [c for c in requested if c != "claude_md"]
+    has_claude_md = "claude_md" in requested
+
+    logger.info(f"Workflow starting generation: {len(requested)} total components, "
+                f"{len(other_components)} first, CLAUDE.md generated last for {role.category}/{role.name}")
     semaphore = asyncio.Semaphore(concurrency)
 
     @tenacity.retry(
@@ -68,10 +76,14 @@ async def parallel_generation_node(state: "GenerationWorkflowState") -> dict:
             logger.error(f"LLM call failed: {str(e)}")
             raise GenerationFailedError(f"LLM call failed: {e}")
 
-    async def generate_one(comp_type: str) -> ToolComponent | None:
+    async def generate_one(
+        comp_type: str,
+        all_components: list[str],
+        generated_components: list[ToolComponent] | None = None,
+    ) -> ToolComponent | None:
         async with semaphore:
             logger.info(f"Generating component: {comp_type}")
-            prompt = build_prompt(comp_type, source_content, role, requested)
+            prompt = build_prompt(comp_type, source_content, role, all_components, generated_components)
             logger.debug(f"Prompt built: {len(prompt)} characters")
             try:
                 content = await call_llm_with_retry(prompt)
@@ -82,24 +94,42 @@ async def parallel_generation_node(state: "GenerationWorkflowState") -> dict:
             logger.success(f"Component {comp_type} parsed: {len(parsed)} file(s)")
             return parsed
 
-    tasks = [generate_one(comp) for comp in requested]
-    results = await asyncio.gather(*tasks, return_exceptions=True)
-
+    # First generate all other components in parallel
     generated: List[ToolComponent] = []
     failed: List[str] = []
 
-    for comp_type, result in zip(requested, results):
+    if other_components:
+        tasks = [generate_one(comp, requested, None) for comp in other_components]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        for comp_type, result in zip(other_components, results):
+            if isinstance(result, Exception):
+                logger.error(f"Component generation failed: {comp_type}, error: {str(result)}")
+                failed.append(comp_type)
+                continue
+            if result:
+                if isinstance(result, list):
+                    generated.extend(result)
+                else:
+                    generated.append(result)
+
+    # Generate CLAUDE.md last - now it gets the list of all other generated files
+    if has_claude_md:
+        logger.info("Generating CLAUDE.md last, with complete list of other component files")
+        result = await generate_one("claude_md", requested, generated)
         if isinstance(result, Exception):
-            logger.error(f"Component generation failed: {comp_type}, error: {str(result)}")
-            failed.append(comp_type)
-            continue
-        if result:
+            failed.append("claude_md")
+            logger.error(
+                "CLAUDE.md generation failed: "
+                f"error: {str(result)}"
+            )
+        elif result is not None:
             if isinstance(result, list):
                 generated.extend(result)
             else:
                 generated.append(result)
 
-    logger.info(f"Parallel generation complete: {len(generated)} files generated, {len(failed)} failed")
+    logger.info(f"Generation complete: {len(generated)} files generated, {len(failed)} failed")
     return {
         "generated_components": generated,
         "failed_components": failed,
@@ -110,21 +140,29 @@ async def validate_components_node(state: "GenerationWorkflowState") -> dict:
     """Validate all generated components against schema."""
     validator = state["_validator"]
     generated = state["generated_components"]
+    failed = state["failed_components"]
 
     logger.info(f"Validating {len(generated)} generated components")
+    valid_components: List[ToolComponent] = []
     for comp in generated:
         try:
             comp.schema_valid = validator.validate(comp)
-            if not comp.schema_valid:
-                logger.warning(f"Validation failed for: {comp.filename}")
+            if comp.schema_valid:
+                valid_components.append(comp)
+            else:
+                logger.warning(f"Validation failed, skipping: {comp.filename}")
+                if comp.type not in failed:
+                    failed.append(comp.type)
         except Exception:
             comp.schema_valid = False
-            logger.warning(f"Validation exception for: {comp.filename}")
+            logger.warning(f"Validation exception, skipping: {comp.filename}")
+            if comp.type not in failed:
+                failed.append(comp.type)
 
-    logger.info(f"Validation complete: {len(generated)} components processed")
+    logger.info(f"Validation complete: {len(valid_components)} valid, {len(failed)} failed")
     return {
-        "validated_components": generated,
-        "failed_components": state["failed_components"],
+        "validated_components": valid_components,
+        "failed_components": failed,
     }
 
 
@@ -143,13 +181,15 @@ async def build_package_node(state: "GenerationWorkflowState") -> dict:
             f"All components failed generation: {', '.join(state['failed_components'])}"
         )
 
+    # Get unique component types (remove duplicates)
+    unique_components = list({c.type for c in components})
     package_meta = PackageMeta(
         role=role,
         version=role.version,
         generated_at=datetime.now(),
         llm_provider=settings.llm_provider,
         llm_model=settings.llm_model,
-        components=[c.type for c in components],
+        components=unique_components,
     )
 
     logger.success(f"Package generation complete: {role.category}/{role.name}")
@@ -161,6 +201,7 @@ def build_prompt(
     source_content: str,
     role: RoleMeta,
     all_components: list[str],
+    generated_components: list[ToolComponent] | None = None,
 ) -> str:
     """Build prompt from template."""
     template = load_prompt(f"{component_type}.md")
@@ -179,8 +220,20 @@ def build_prompt(
             "rules": "Rules - 规则文件",
             "skills": "Skills - 技能文件",
         }
-        lines = [f"- {comp}: {component_descriptions.get(comp, comp)}" for comp in all_components]
-        template_vars["component_list"] = "\n".join(lines)
+        # If we have already generated other components, include their actual filenames
+        if generated_components is not None and len(generated_components) > 0:
+            lines = []
+            for comp in generated_components:
+                desc = component_descriptions.get(comp.type, comp.type)
+                lines.append(f"- `.claude/{comp.target_path}` - {desc}")
+            template_vars["component_list"] = "\n".join(lines)
+        else:
+            # Fallback: list component types, exclude claude_md itself
+            lines = [
+                f"- {comp}: {component_descriptions.get(comp, comp)}"
+                for comp in all_components if comp != "claude_md"
+            ]
+            template_vars["component_list"] = "\n".join(lines)
     return template.format(**template_vars)
 
 
@@ -200,7 +253,8 @@ def parse_response(component_type: str, content: str, role: RoleMeta) -> List[To
 
     # For other types: LLM outputs multiple files with ## filename headers
     # Split by "## 文件名: " pattern
-    pattern = r"##\s+文件名:\s+(.+?)\n"
+    # Use [^\n]+ to capture everything until newline, supports special characters in filenames
+    pattern = r"##\s+文件名:\s+([^\n]+)\n"
     parts = re.split(pattern, content)
 
     if len(parts) == 1:
@@ -224,10 +278,23 @@ def parse_response(component_type: str, content: str, role: RoleMeta) -> List[To
             filename = parts[i].strip()
             file_content = parts[i + 1].strip()
             # Remove wrapping code block if present
+            # Handle both ``` and ```language formats
             if file_content.startswith("```"):
-                file_content = file_content[file_content.find("\n")+1:].rstrip()
-                if file_content.endswith("```"):
-                    file_content = file_content[:-3].rstrip()
+                # Find first newline after opening ```
+                first_newline = file_content.find("\n")
+                if first_newline != -1:
+                    file_content = file_content[first_newline+1:].rstrip()
+                else:
+                    # No newline, just strip the ```
+                    file_content = file_content[3:].rstrip()
+            # Remove closing ``` if present (anywhere at end)
+            # Strip trailing whitespace first then check
+            file_content = file_content.rstrip()
+            if file_content.endswith("```"):
+                # Find the last occurrence of ```
+                last_backtick = file_content.rfind("```")
+                if last_backtick > 0:
+                    file_content = file_content[:last_backtick].rstrip()
             target_path = _get_target_path(component_type, filename)
             components.append(ToolComponent(
                 type=component_type,

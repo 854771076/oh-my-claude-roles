@@ -45,8 +45,8 @@ class Settings(BaseSettings):
 
     # Generation defaults
     default_components: list[str] = Field(
-        default=["claude_md", "hooks", "commands", "agents", "rules", "skills"],
-        description="Default components to generate"
+        default=["hooks", "commands", "agents", "rules", "skills", "claude_md"],
+        description="Default components to generate (claude_md last to include all tool indexes)"
     )
 
     model_config = SettingsConfigDict(

@@ -54,7 +54,9 @@
       "Bash(ls -la src/ src/*/)",
       "Bash(python -c \"from src.services.llm.role_design.prompts.ask_step_question import *; print\\(''File imported successfully!''\\)\")",
       "Bash(python test_examples.py)",
-      "Bash(pytest tests/test_packager.py::test_save_and_get -v)"
+      "Bash(pytest tests/test_packager.py::test_save_and_get -v)",
+      "Bash(python -m flake8 src/ tests/ --select=I001,E501 --max-line-length=88 --exclude=\"tests/*\")",
+      "Bash(pytest tests/test_packager.py -v)"
     ]
   }
 }

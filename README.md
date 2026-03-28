@@ -1,6 +1,34 @@
 # Oh-My-Claude-Roles
 
-Claude Code 角色工具包管理器 - 从原始角色规范文档一键生成完整 Claude Code 工具包。
+<p align="center">
+<em>Claude Code 角色工具包管理器 - 从原始角色规范文档一键生成完整 Claude Code 工具包</em>
+</p>
+
+<p align="center">
+<a href="https://pypi.org/project/oh-my-claude-roles"><img src="https://img.shields.io/pypi/v/oh-my-claude-roles.svg" alt="PyPI version"></a>
+<a href="https://pypi.org/project/oh-my-claude-roles"><img src="https://img.shields.io/pypi/pyversions/oh-my-claude-roles.svg" alt="Python versions"></a>
+<a href="https://github.com/charleydev/oh-my-claude-roles/actions"><img src="https://github.com/charleydev/oh-my-claude-roles/workflows/tests/badge.svg" alt="Tests"></a>
+<a href="https://github.com/charleydev/oh-my-claude-roles/blob/master/LICENSE"><img src="https://img.shields.io/github/license/charleydev/oh-my-claude-roles.svg" alt="License"></a>
+</p>
+
+## 📖 目录
+
+- [🤖 什么是 Oh-My-Claude-Roles](#-什么是-oh-my-claude-roles)
+- [✨ 特性](#-特性)
+- [🎯 典型使用场景](#-典型使用场景)
+- [📦 安装](#-安装)
+- [⚙️ 配置](#️-配置)
+- [🚀 使用](#-使用)
+- [🎨 内置示例角色](#-内置示例角色)
+- [📝 角色文档格式](#-角色文档格式)
+- [📁 项目结构](#-项目结构)
+- [❓ 常见问题](#-常见问题)
+- [🤝 贡献](#-贡献)
+- [🧪 开发](#-开发)
+- [📊 测试覆盖率](#-测试覆盖率)
+- [🎯 支持的 Claude Code 组件](#-支持的-claude-code-组件)
+- [⭐ 支持](#-支持)
+- [📜 许可证](#-许可证)
 
 ## 🤖 什么是 Oh-My-Claude-Roles
 
@@ -23,6 +51,13 @@ Oh-My-Claude-Roles 是一个命令行工具，帮助你管理领域特定的 Cla
 - 🎨 **六种工具类型** - 完整支持 Claude Code 所有扩展能力
 - 🔌 **多 LLM 支持** - OpenAI、Anthropic、Azure、Google、Ollama 全都支持
 - ✅ **TDD 开发** - 高测试覆盖率，每个模块都有完整测试
+
+## 🎯 典型使用场景
+
+- **团队规范统一**：编写一份团队开发规范，所有成员一键安装到任何项目
+- **多项目维护**：在多个项目之间共享 Claude Code 配置，避免重复劳动
+- **领域特定角色**：为前端、后端、数据科学等不同领域创建专用开发角色
+- **学习最佳实践**：收集整理社区优秀的 Claude Code 使用规范，随时安装使用
 
 ## 📦 安装
 
@@ -100,6 +135,22 @@ oh-roles clean          # 清理全部
 oh-roles clean backend/python  # 清理指定角色
 ```
 
+## 🎨 内置示例角色
+
+仓库已经内置了几个开箱可用的角色规范：
+
+| 角色 | 领域 | 说明 |
+|------|------|------|
+| `backend/python` | 后端 | Python 企业级后端开发规范 |
+| `fullstack/typescript` | 全栈 | TypeScript 全栈开发规范 |
+| `blockchain/ETHBlockChain` | 区块链 | 以太坊 Solidity 智能合约开发 |
+| `ai/Prompt` | AI 提示词 | AI 提示词工程企业级开发规范 |
+
+直接安装使用：
+```bash
+oh-roles install backend/python
+```
+
 ## 📝 角色文档格式
 
 角色文档使用标准 Markdown 格式，支持 YAML frontmatter 来定义元数据:
@@ -143,10 +194,10 @@ oh-my-claude-roles/
 │   ├── __init__.py
 │   ├── cli.py                      # CLI 入口
 │   ├── config.py                   # Pydantic Settings 配置
-│   ├── models.py                  # 数据模型
+│   ├── models.py                   # 数据模型
 │   ├── exceptions.py              # 自定义异常
 │   ├── logger.py                  # 日志配置
-│   ├── scanner.py                # 角色文档扫描器
+│   ├── scanner.py                  # 角色文档扫描器
 │   ├── validator.py              # LLM 输出验证器
 │   ├── generator.py              # LLM 工具包生成器
 │   ├── packager.py               # 打包缓存管理器
@@ -164,6 +215,38 @@ oh-my-claude-roles/
 ├── pyproject.toml                # 项目配置
 └── README.md
 ```
+
+## ❓ 常见问题
+
+### Q: 为什么需要 Oh-My-Claude-Roles？
+
+A: 当你在多个项目中使用 Claude Code 时，通常需要在每个项目重复编写相同的开发规范。Oh-My-Claude-Roles 让你一次编写，随处安装，并且利用 AI 自动生成完整的 Claude Code 工具链。
+
+### Q: 生成的工具包存储在哪里？
+
+A: 原始角色文档放在 `roles/` 目录，生成后的缓存工具包放在 `packages/` 目录。安装时会复制到目标项目的 `.claude/` 目录。
+
+### Q: 可以分享我的角色吗？
+
+A: 当然可以！欢迎提交 Pull Request 将你的角色添加到仓库中，分享给社区。
+
+### Q: 如何更新已安装的角色？
+
+A: 重新运行 `oh-roles install <role>` 即可更新到最新版本。
+
+### Q: 支持自定义提示词模板吗？
+
+A: 支持。你可以通过环境变量指定自定义提示词模板目录，或者直接修改源码中的模板。
+
+## 🤝 贡献
+
+欢迎贡献代码！如果你有好的想法或发现了 Bug，请：
+
+1. Fork 这个仓库
+2. 创建你的特性分支 (`git checkout -b feature/amazing-feature`)
+3. 提交你的改动 (`git commit -m 'Add some amazing feature'`)
+4. 推送到分支 (`git push origin feature/amazing-feature`)
+5. 开启一个 Pull Request
 
 ## 🧪 开发
 
@@ -205,6 +288,10 @@ pytest tests/ -v --cov=src --cov-report=term --cov-report=html
 | `agents` | 子代理配置 |
 | `rules` | 自动检测的代码规则 |
 | `skills` | 自动触发的技能模块 |
+
+## ⭐ 支持
+
+如果你觉得这个项目对你有帮助，欢迎给一个 **Star** ⭐️，这对我很重要。
 
 ## 📜 许可证
 
