@@ -1,0 +1,13 @@
+{
+  "name": "Python类型安全检查",
+  "description": "执行mypy静态类型检查，保证强类型安全符合规范",
+  "triggers": ["PreCommit"],
+  "matcher": "*.py",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "mypy app/",
+      "timeout": 60
+    }
+  ]
+}

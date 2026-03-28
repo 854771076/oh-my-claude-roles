@@ -1,0 +1,13 @@
+{
+  "name": "异步开发规范检查",
+  "description": "检查是否违反全异步开发规范，禁止在异步代码中使用同步IO",
+  "triggers": ["PreCommit"],
+  "matcher": "*.py",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "grep -n \"import requests\\|time.sleep\\|open(\" app/ --include=\"*.py\" | grep -v \"__pycache__\" | grep -v \".pyc\" && echo \"错误：发现违反异步开发规范的代码，请使用httpx.AsyncClient、asyncio.sleep、aiofiles替代\" && exit 1 || exit 0",
+      "timeout": 30
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "Conventional Commits提交信息检查",
+  "description": "检查提交信息是否符合Conventional Commits规范",
+  "triggers": ["PreCommit"],
+  "hooks": [
+    {
+      "type": "command",
+      "command": "echo \"$COMMIT_MSG\" | grep -qE '^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\\([^)]+\\))?: .{1,50}$' || (echo \"提交信息不符合Conventional Commits规范，请参考文档要求格式\" && exit 1)",
+      "timeout": 10
+    }
+  ]
+}
