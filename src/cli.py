@@ -1,21 +1,22 @@
 import asyncio
-from typing import Optional
 from pathlib import Path
-import typer
-from rich.console import Console
-from rich.table import Table
-from rich.prompt import Confirm, Prompt
+from typing import Optional
+
 import questionary
+import typer
 from loguru import logger
+from rich.console import Console
+from rich.prompt import Confirm, Prompt
+from rich.table import Table
 
 from . import __version__
 from .config import settings
-from .logger import setup_logger
-from .scanner import RoleScanner
-from .packager import PackageCache
+from .exceptions import OhRolesError
 from .generator import ToolGenerator
 from .installer import ToolInstaller
-from .exceptions import OhRolesError
+from .logger import setup_logger
+from .packager import PackageCache
+from .scanner import RoleScanner
 from src.services.llm.factory import create_llm
 from src.services.llm.role_design.cli_chat import run_interactive
 
@@ -35,7 +36,9 @@ def version_callback(value: bool):
 
 @app.command(name="install")
 def install(
-    role_name: Optional[str] = typer.Argument(None, help="角色名称，如 backend/python"),
+    role_name: Optional[str] = typer.Argument(
+        None, help="角色名称，如 backend/python"
+    ),
     target: str = typer.Option(".", "--target", "-t", help="目标项目路径"),
     dry_run: bool = typer.Option(False, "--dry-run", help="预览模式，不实际写入"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="详细输出"),
@@ -55,7 +58,10 @@ def install(
     # Select role
     if not role_name:
         choices = [
-            (f"{r.category}/{r.name}", f"{r.category}/{r.name} - {r.display_name}")
+            (
+                f"{r.category}/{r.name}",
+                f"{r.category}/{r.name} - {r.display_name}"
+            )
             for r in all_roles
         ]
         role_choice = questionary.select(
@@ -103,7 +109,11 @@ def install(
 
     if cached and cache.is_latest(role):
         use_cache = Confirm.ask(
-            f"✅ 发现已缓存的工具包 ({cached['meta'].generated_at.strftime('%Y-%m-%d %H:%M')})，是否使用?",
+            (
+                "✅ 发现已缓存的工具包 ("
+                f"{cached['meta'].generated_at.strftime('%Y-%m-%d %H:%M')}"
+                ")，是否使用?"
+            ),
             default=True,
         )
         if use_cache:
@@ -120,9 +130,9 @@ def install(
 
         with console.status("[bold green]正在生成工具包...[/bold green]"):
             try:
-                meta, components_to_install = asyncio.run(generator.generate_package(
-                    role, selected_components
-                ))
+                meta, components_to_install = asyncio.run(
+                    generator.generate_package(role, selected_components)
+                )
                 cache.save(meta, components_to_install)
             except OhRolesError as e:
                 console.print(f"[red]生成失败: {e.message}[/red]")
@@ -241,7 +251,9 @@ def list_roles(
             table.add_row(
                 f"{r.category}/{r.name}",
                 r.category,
-                r.description[:50] + ("..." if len(r.description) > 50 else ""),
+                r.description[:50] + (
+                    "..." if len(r.description) > 50 else ""
+                ),
                 r.version,
             )
         console.print(table)
@@ -289,7 +301,9 @@ def show_config():
     table.add_column("值")
     table.add_row("LLM Provider", settings.llm_provider)
     table.add_row("LLM Model", settings.llm_model)
-    table.add_row("API Key", "已配置" if settings.llm_api_key else "[red]未配置[/red]")
+    table.add_row(
+        "API Key", "已配置" if settings.llm_api_key else "[red]未配置[/red]"
+    )
     table.add_row("Timeout", f"{settings.llm_timeout}s")
     table.add_row("Max Retries", str(settings.llm_max_retries))
     table.add_row("Concurrency", str(settings.llm_concurrency))

@@ -1,10 +1,13 @@
 import json
+import shutil
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
+
 from loguru import logger
+
 from .config import settings
-from .models import RoleMeta, PackageMeta, ToolComponent
 from .exceptions import CacheCorruptedError
+from .models import PackageMeta, RoleMeta, ToolComponent
 
 
 class PackageCache:
@@ -60,7 +63,9 @@ class PackageCache:
                                     type=comp_type,
                                     content=f.read_text(encoding="utf-8"),
                                     filename=f.name,
-                                    target_path=self._get_target_path(comp_type, f.name),
+                                    target_path=self._get_target_path(
+                                        comp_type, f.name
+                                    ),
                                 ))
 
             logger.debug(f"Loaded cached package: {len(components)} component(s)")
@@ -86,9 +91,13 @@ class PackageCache:
             comp_file = cache_dir / comp.filename
             comp_file.parent.mkdir(parents=True, exist_ok=True)
             comp_file.write_text(comp.content, encoding="utf-8")
-            logger.debug(f"Saved component: {comp_file}")
+            logger.debug(
+                f"Saved component: {comp_file}"
+            )
 
-        logger.success(f"Package cached successfully: {len(components)} component(s) saved")
+        logger.success(
+            f"Package cached successfully: {len(components)} component(s) saved"
+        )
 
     def is_latest(self, role: RoleMeta) -> bool:
         """Check if cached version is latest (source hash matches)"""

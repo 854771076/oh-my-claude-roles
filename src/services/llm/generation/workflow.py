@@ -1,13 +1,19 @@
-from typing import TypedDict, List, Optional
-from langgraph.graph import StateGraph, END
+from typing import List, Optional, TypedDict
+
 from langchain_core.language_models.chat_models import BaseChatModel
-from src.models import RoleMeta, PackageMeta, ToolComponent
+from langgraph.graph import END, StateGraph
+
+from src.models import (
+    PackageMeta,
+    RoleMeta,
+    ToolComponent,
+)
 from src.validator import OutputValidator
 from .nodes import (
-    read_source_node,
-    parallel_generation_node,
-    validate_components_node,
     build_package_node,
+    parallel_generation_node,
+    read_source_node,
+    validate_components_node,
 )
 
 
