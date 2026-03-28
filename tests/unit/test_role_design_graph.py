@@ -24,10 +24,11 @@ def test_get_next_step_complete():
         coding_standards="PEP8",
         custom_content="None",
     )
-    assert get_next_step(state) == "ask_project_scale"
+    assert get_next_step(state) == "generate_final"
 
 
 def test_get_next_step_after_project_scale():
+    # After project_scale, go directly to generate_final (no ask_team_size anymore)
     state = RoleDesignState(
         name="test",
         display_name="Test",
@@ -39,7 +40,7 @@ def test_get_next_step_after_project_scale():
         coding_standards="PEP8",
         project_scale="medium",
     )
-    assert get_next_step(state) == "ask_team_size"
+    assert get_next_step(state) == "generate_final"
 
 
 def test_get_next_step_complete_all():
