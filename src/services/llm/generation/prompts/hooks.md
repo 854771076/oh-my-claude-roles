@@ -20,6 +20,18 @@
    - hooks: 数组，每个 hook 包含 type (command), command (命令), timeout (超时秒数)
 6. 输出不要有任何提示的语言，输出纯JSON，确保 JSON 格式正确
 
+## Claude 合规要求
+
+1. **Schema 规范**：严格遵循 Claude Code Hooks JSON schema 规范
+2. **合法触发时机**：只能使用以下支持的触发时机：
+   - `PreToolUse` - 工具使用前
+   - `PostToolUse` - 工具使用后
+   - `PreCommit` - 代码提交前
+   - `PostCommit` - 代码提交后
+3. **JSON 格式**：输出必须是合法 JSON，不得包含尾随逗号，确保可以被正确解析
+4. **超时设置**：每个 hook 必须设置合理的超时时间（建议 30-60 秒）
+5. **单一职责**：每个 JSON 文件只包含一个 hook 配置
+
 输出格式（严格遵守）：
 
 每个文件单独输出，使用以下格式：
