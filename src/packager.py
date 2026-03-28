@@ -15,13 +15,22 @@ class PackageCache:
         self.packages_dir.mkdir(parents=True, exist_ok=True)
 
     def get(self, role: RoleMeta) -> Optional[Dict]:
-        """Get cached package if exists"""
+        """Get cached package if exists.
+        Falls back to legacy unversioned directory if versioned doesn't exist.
+        """
         cache_dir = self._get_cache_dir(role)
         meta_file = cache_dir / "meta.json"
 
         if not meta_file.exists():
-            logger.debug(f"No cached package found: {cache_dir}")
-            return None
+            # Fallback to legacy unversioned path for backward compatibility
+            legacy_cache_dir = self.packages_dir / role.category / role.name
+            legacy_meta_file = legacy_cache_dir / "meta.json"
+            if legacy_meta_file.exists():
+                cache_dir = legacy_cache_dir
+                meta_file = legacy_meta_file
+            else:
+                logger.debug(f"No cached package found: {cache_dir}")
+                return None
 
         logger.debug(f"Loading cached package from: {cache_dir}")
         try:
@@ -93,10 +102,11 @@ class PackageCache:
         if role_name:
             parts = role_name.split("/")
             if len(parts) == 2:
-                cache_dir = self.packages_dir / parts[0] / parts[1]
-                if cache_dir.exists():
+                # Find all versioned directories under role
+                role_dir = self.packages_dir / parts[0] / parts[1]
+                if role_dir.exists():
                     import shutil
-                    shutil.rmtree(cache_dir)
+                    shutil.rmtree(role_dir)
                     return 1
             return 0
         else:
@@ -118,18 +128,33 @@ class PackageCache:
             for role_dir in category_dir.iterdir():
                 if not role_dir.is_dir():
                     continue
-                meta_file = role_dir / "meta.json"
-                if meta_file.exists():
-                    try:
-                        data = json.loads(meta_file.read_text())
-                        roles.append(data["role"])
-                    except Exception:
+                # Check for versioned layout: role_dir/vX.X.X/meta.json
+                found = False
+                for version_dir in role_dir.iterdir():
+                    if not version_dir.is_dir():
                         continue
+                    meta_file = version_dir / "meta.json"
+                    if meta_file.exists():
+                        try:
+                            data = json.loads(meta_file.read_text())
+                            roles.append(RoleMeta(**data["role"]))
+                        except Exception:
+                            continue
+                        found = True
+                if not found:
+                    # Legacy unversioned layout
+                    meta_file = role_dir / "meta.json"
+                    if meta_file.exists():
+                        try:
+                            data = json.loads(meta_file.read_text())
+                            roles.append(RoleMeta(**data["role"]))
+                        except Exception:
+                            continue
         return roles
 
     def _get_cache_dir(self, role: RoleMeta) -> Path:
-        """Get cache directory for role"""
-        return self.packages_dir / role.category / role.name
+        """Get cache directory for role, includes version."""
+        return self.packages_dir / role.category / role.name / f"v{role.version}"
 
     def _get_target_path(self, comp_type: str, filename: str) -> str:
         """Get target installation path in cache"""
