@@ -21,15 +21,15 @@ class GenerationWorkflowState(TypedDict):
     failed_components: List[str]
     package_meta: Optional[PackageMeta]
     error: Optional[str]
-    __llm: Optional[BaseChatModel]
-    __validator: Optional[OutputValidator]
-    __concurrency: int
+    _llm: Optional[BaseChatModel]
+    _validator: Optional[OutputValidator]
+    _concurrency: int
 
 
 def create_generation_workflow(
     llm: BaseChatModel,
     validator: OutputValidator,
-    concurrency: int = 3,
+    concurrency: int = None,
 ) -> StateGraph:
     """Create LangGraph workflow for complete tool package generation."""
 

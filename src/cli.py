@@ -184,9 +184,10 @@ def install(
 @app.command(name="generate")
 def generate(
     role_name: str = typer.Argument(..., help="角色名称，如 backend/python"),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="详细输出"),
 ):
     """强制重新生成并打包角色工具包，不安装"""
-    setup_logger()
+    setup_logger(verbose)
     scanner = RoleScanner()
     all_roles = scanner.scan_all()
     role = next(
@@ -321,17 +322,15 @@ def show_version():
 @app.command()
 def create(
     output: Optional[Path] = None,
-    verbose: bool = False,
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="详细输出"),
 ):
     """Create a new role document interactively with AI guidance.
 
     Starts an interactive conversation that guides you through designing
     a complete role specification document, and saves the final result.
     """
+    setup_logger(verbose)
     llm = create_llm()
-    if verbose:
-        from src.logger import logger
-        logger.enable("debug")
     output_path = str(output) if output else None
     run_interactive(llm, output_path)
 

@@ -1,0 +1,13 @@
+{
+  "name": "提示词敏感信息扫描",
+  "description": "检查提示词文件中是否硬编码敏感信息，禁止API密钥、商业机密泄露",
+  "triggers": ["PreCommit"],
+  "matcher": "**/*.prompt.ts,**/*.prompt.md,**/*.ts",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "npx secretlint \"**/*\"",
+      "timeout": 60
+    }
+  ]
+}

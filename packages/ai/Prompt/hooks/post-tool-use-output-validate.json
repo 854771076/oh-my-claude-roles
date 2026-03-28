@@ -1,0 +1,13 @@
+{
+  "name": "输出结果Zod Schema校验",
+  "description": "模型输出后校验是否符合定义的Zod Schema，不符合触发异常处理",
+  "triggers": ["PostToolUse"],
+  "matcher": "All",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "node scripts/validate-output-schema.js",
+      "timeout": 60
+    }
+  ]
+}

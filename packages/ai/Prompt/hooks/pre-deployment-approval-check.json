@@ -1,0 +1,13 @@
+{
+  "name": "生产发布前审批检查",
+  "description": "生产环境发布前检查是否完成双审批与测试报告归档，不满足禁止发布",
+  "triggers": ["PreDeployment"],
+  "matcher": "**/*",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "node scripts/check-deployment-approval.js",
+      "timeout": 60
+    }
+  ]
+}

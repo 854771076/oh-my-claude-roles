@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 from typing import List, Dict, Optional
+from loguru import logger
 from .config import settings
 from .models import RoleMeta, PackageMeta, ToolComponent
 from .exceptions import CacheCorruptedError
@@ -19,8 +20,10 @@ class PackageCache:
         meta_file = cache_dir / "meta.json"
 
         if not meta_file.exists():
+            logger.debug(f"No cached package found: {cache_dir}")
             return None
 
+        logger.debug(f"Loading cached package from: {cache_dir}")
         try:
             meta_data = json.loads(meta_file.read_text(encoding="utf-8"))
             meta = PackageMeta(**meta_data)
@@ -28,36 +31,55 @@ class PackageCache:
             # Load all components
             components: List[ToolComponent] = []
             for comp_type in meta.components:
-                comp_dir = cache_dir / comp_type
-                if comp_dir.exists():
-                    for f in comp_dir.iterdir():
-                        if f.is_file():
-                            components.append(ToolComponent(
-                                type=comp_type,
-                                content=f.read_text(encoding="utf-8"),
-                                filename=f.name,
-                                target_path=self._get_target_path(comp_type, f.name),
-                            ))
+                if comp_type == "claude_md":
+                    # claude_md is directly at cache_dir/CLAUDE.md
+                    claude_file = cache_dir / "CLAUDE.md"
+                    if claude_file.exists():
+                        components.append(ToolComponent(
+                            type=comp_type,
+                            content=claude_file.read_text(encoding="utf-8"),
+                            filename="CLAUDE.md",
+                            target_path=self._get_target_path(comp_type, "CLAUDE.md"),
+                        ))
+                else:
+                    # Other types are in their type subdirectory
+                    comp_dir = cache_dir / comp_type
+                    if comp_dir.exists():
+                        for f in comp_dir.iterdir():
+                            if f.is_file():
+                                components.append(ToolComponent(
+                                    type=comp_type,
+                                    content=f.read_text(encoding="utf-8"),
+                                    filename=f.name,
+                                    target_path=self._get_target_path(comp_type, f.name),
+                                ))
 
+            logger.debug(f"Loaded cached package: {len(components)} component(s)")
             return {"meta": meta, "components": components}
         except Exception as e:
+            logger.error(f"Cache load failed: {e}")
             raise CacheCorruptedError(f"Cache corrupted for {role.name}: {e}")
 
     def save(self, meta: PackageMeta, components: List[ToolComponent]) -> None:
         """Save generated package to cache"""
         cache_dir = self._get_cache_dir(meta.role)
+        logger.info(f"Saving package to cache: {cache_dir}")
         cache_dir.mkdir(parents=True, exist_ok=True)
 
         # Save metadata
         meta_file = cache_dir / "meta.json"
         meta_file.write_text(meta.model_dump_json(indent=2), encoding="utf-8")
+        logger.debug(f"Saved metadata: {meta_file}")
 
         # Save each component by type directory
         for comp in components:
-            comp_dir = cache_dir / comp.type
-            comp_dir.mkdir(parents=True, exist_ok=True)
-            comp_file = comp_dir / comp.filename
+            # comp.filename already includes the type subdirectory from _get_target_path
+            comp_file = cache_dir / comp.filename
+            comp_file.parent.mkdir(parents=True, exist_ok=True)
             comp_file.write_text(comp.content, encoding="utf-8")
+            logger.debug(f"Saved component: {comp_file}")
+
+        logger.success(f"Package cached successfully: {len(components)} component(s) saved")
 
     def is_latest(self, role: RoleMeta) -> bool:
         """Check if cached version is latest (source hash matches)"""
