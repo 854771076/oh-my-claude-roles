@@ -15,6 +15,11 @@ class RoleDesignState(BaseModel):
     coding_standards: str | None = Field(None, description="Coding standards and best practices")
     custom_content: str | None = Field(None, description="User-customized content")
 
+    # Additional information for enterprise-level documentation
+    project_scale: str | None = Field(None, description="Project scale (e.g., small team <5, medium 5-20, large 20+)")
+    team_size: str | None = Field(None, description="Team size and composition")
+    compliance_requirements: str | None = Field(None, description="Any specific compliance or regulatory requirements (e.g., GDPR, SOC 2)")
+
     # Conversation state
     current_step: str = Field(default="start", description="Current step identifier")
     conversation_history: list[dict] = Field(default_factory=list, description="Conversation history")
