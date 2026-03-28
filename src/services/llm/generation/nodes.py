@@ -1,14 +1,22 @@
 from typing import List, TYPE_CHECKING
+import importlib.resources
 import re
 from langchain_core.messages import HumanMessage
 from src.models import RoleMeta, PackageMeta, ToolComponent
 from src.validator import OutputValidator
 from src.config import settings
 from src.exceptions import GenerationFailedError
-from src.prompts import PROMPTS
 
 if TYPE_CHECKING:
     from .workflow import GenerationWorkflowState
+
+
+def load_prompt(filename: str) -> str:
+    """Load prompt template from file."""
+    with importlib.resources.files(
+        "src.services.llm.generation.prompts"
+    ).joinpath(filename).open(encoding="utf-8") as f:
+        return f.read()
 
 
 async def read_source_node(state: "GenerationWorkflowState") -> dict:
@@ -112,14 +120,14 @@ def build_prompt(
     role: RoleMeta,
     all_components: list[str],
 ) -> str:
-    """Build prompt from template. Reuses logic from ToolGenerator."""
-    template = PROMPTS[component_type]
+    """Build prompt from template."""
+    template = load_prompt(f"{component_type}.md")
     template_vars = {
         "role_name": role.display_name,
         "role_description": role.description,
         "source_content": source_content,
     }
-    # Add component list for claude_md
+    # Add component list for claude_md - ensures CLAUDE.md indexes all components
     if component_type == "claude_md":
         component_descriptions = {
             "claude_md": "CLAUDE.md - 项目核心指令文件",
