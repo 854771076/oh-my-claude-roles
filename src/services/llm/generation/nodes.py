@@ -254,62 +254,64 @@ def parse_response(component_type: str, content: str, role: RoleMeta) -> List[To
 
     # For other types: LLM outputs multiple files with ## filename headers
     # Split by "## 文件名: " pattern
-    # Use [^\n]+ to capture everything until newline, supports special characters in filenames
-    pattern = r"##\s+文件名:\s+([^\n]+)\n"
+    pattern = r"##\s+文件名:\s*"
     parts = re.split(pattern, content)
 
     if len(parts) == 1:
-        # Single file, guess filename
+        # No filename headers, single file with default name
         ext = _get_extension(component_type)
         filename = f"{role.name}.{ext}"
         target_path = _get_target_path(component_type, filename)
         components.append(ToolComponent(
             type=component_type,
-            content=parts[0],
+            content=content.strip(),
             filename=filename,
             target_path=target_path,
         ))
+        return components
     else:
-        # Skip first empty part, then pairs of (filename, content)
+        # Skip first empty part, then process the rest
         if parts[0].strip() == "":
             parts = parts[1:]
-        for i in range(0, len(parts), 2):
-            if i + 1 >= len(parts):
-                break
-            raw_filename = parts[i].strip()
-            # Clean filename: take only first line, remove invalid characters
+
+        for part in parts:
+            # Split into filename and content at first newline
+            if '\n' in part:
+                raw_filename, file_content = part.split('\n', 1)
+            else:
+                raw_filename = part
+                file_content = ""
+
+            raw_filename = raw_filename.strip()
+            file_content = file_content.strip()
+
+            # Clean filename
             filename = raw_filename.split('\n')[0]
-            # Remove invalid filename characters for Windows
             filename = re.sub(r'[<>:"/\\|?*]', '', filename)
-            # Replace spaces with dashes
             filename = filename.replace(' ', '-')
+
             # If filename is empty after cleaning, use default
             if not filename:
                 ext = _get_extension(component_type)
                 filename = f"{role.name}.{ext}"
             # If filename is still too long (contains content), use default
-            if len(filename) > 100:
+            if len(filename) > 50:
                 ext = _get_extension(component_type)
                 filename = f"{role.name}.{ext}"
-            file_content = parts[i + 1].strip()
+
             # Remove wrapping code block if present
-            # Handle both ``` and ```language formats
             if file_content.startswith("```"):
-                # Find first newline after opening ```
                 first_newline = file_content.find("\n")
                 if first_newline != -1:
                     file_content = file_content[first_newline+1:].rstrip()
                 else:
-                    # No newline, just strip the ```
                     file_content = file_content[3:].rstrip()
-            # Remove closing ``` if present (anywhere at end)
-            # Strip trailing whitespace first then check
             file_content = file_content.rstrip()
             if file_content.endswith("```"):
-                # Find the last occurrence of ```
                 last_backtick = file_content.rfind("```")
                 if last_backtick > 0:
                     file_content = file_content[:last_backtick].rstrip()
+
             target_path = _get_target_path(component_type, filename)
             components.append(ToolComponent(
                 type=component_type,

@@ -1,8 +1,10 @@
 # Vue 3 开发助手
 
-专注于帮开发者解决Vue 3开发相关问题的技术助手，面向Vue 3开发学习者与前端开发工程师，用于解决Vue 3项目开发中的各类问题。
+专注于帮开发者解决Vue 3开发相关问题的技术助手，面向Vue3开发学习者与前端开发工程师，用于解决Vue3项目开发。
 
-## 核心技术栈
+---
+
+## 核心技术栈要求
 
 | Technology | Version Requirements | Core Positioning & Usage Guidelines |
 | ---------- | --------------------- | ------------------------------------ |
@@ -21,7 +23,9 @@
 
 **遵循原则**：不重复造轮子，优先使用成熟生产验证的框架，不手写重复实现；只实现无法通过现成工具解决的能力。
 
-## 核心开发铁则
+---
+
+## 核心开发铁则（最高优先级）
 
 1. **优先组合式API**：所有新组件强制使用`<script setup>`组合式API，不再维护选项式API风格的新代码
 2. **类型安全强制**：全业务代码使用TypeScript，禁止`any`类型滥用，所有数据结构必须有明确类型定义
@@ -31,6 +35,8 @@
 6. **可测试性设计**：业务逻辑抽离为纯函数/可复用组合式函数，方便单元测试，禁止逻辑和UI强耦合
 7. **可维护性优先**：语义化命名，文件目录结构清晰，复杂逻辑必须添加文档说明
 8. **异步不阻塞**：所有IO操作必须使用async/await语法，禁止同步阻塞调用
+
+---
 
 ## 企业级项目目录结构
 
@@ -70,6 +76,8 @@ project-root/
 └── package.json           # 项目依赖配置
 ```
 
+---
+
 ## 代码书写规范
 
 ### 命名规范
@@ -96,6 +104,8 @@ project-root/
 - 禁止`console.log`打印调试信息提交到主线分支
 - 禁止滥用`any`类型绕过类型检查
 - 禁止将所有状态放到全局store，组件内状态尽量组件内部维护
+
+---
 
 ## 核心模块开发规范
 
@@ -126,6 +136,8 @@ project-root/
 - 按业务模块拆分路由配置，统一注册，大型项目支持路由懒加载优化首屏加载速度
 - 路由守卫统一处理权限验证、登录状态校验，不分散到组件中处理
 
+---
+
 ## 测试规范
 
 ### 核心测试原则
@@ -145,6 +157,8 @@ project-root/
 - 核心业务模块单元测试覆盖率不低于80%
 - 工具函数、通用组合式函数覆盖率不低于90%
 - 页面组件核心交互流程需要覆盖E2E测试
+
+---
 
 ## 代码提交规范
 
@@ -181,6 +195,8 @@ project-root/
 - 提交前必须运行ESLint检查，不允许有错误的代码提交
 - 必须通过单元测试才能提交到远程仓库
 
+---
+
 ## 安全与运维规范
 
 ### 配置管理
@@ -205,6 +221,8 @@ project-root/
 - 接入前端错误监控（如Sentry），及时收集线上错误信息
 - 配置合理的缓存策略，静态资源添加hash，避免用户端缓存旧版本代码
 
+---
+
 ## 禁止实践列表
 
 1. 禁止在Vue 3新项目中使用Vue 2选项式API开发业务代码
@@ -218,48 +236,56 @@ project-root/
 
 ---
 
+## 参考文档
+
+- [Vue 3 官方文档](https://cn.vuejs.org/)
+- [Vite 官方文档](https://cn.vitejs.dev/)
+- [Pinia 官方文档](https://pinia.vuejs.org/zh/)
+- [Vue Router 官方文档](https://router.vuejs.org/zh/)
+- [Conventional Commits 规范](https://www.conventionalcommits.org/zh-hans/v1.0.0/)
+- [TypeScript 官方文档](https://www.typescriptlang.org/zh/docs/)
+
+---
+
 ## 组件索引
 
 本角色包包含以下附加组件，已自动安装：
 
 ### Hooks (钩子脚本)
 
-- `.claude/hooks/vue3-code-check.json` - 代码书写规范自动检查钩子
-- `.claude/hooks/vue3-type-check.json` - TypeScript类型规范自动检查钩子
-- `.claude/hooks/vue3-unit-test.json` - 单元测试规范自动检查钩子
-- `.claude/hooks/vue3-commit-lint.json` - Commit提交规范自动检查钩子
-- `.claude/hooks/vue3-secret-check.json` - 敏感信息泄露检查钩子
-- `.claude/hooks/vue3-lint-staged.json` - 暂存代码ESLint检查钩子
-- `.claude/hooks/vue3-build-check.json` - 生产构建前检查钩子
+- `.claude/hooks/vue3-pre-commit-eslint.json` - 提交前自动执行ESLint代码规范检查
+- `.claude/hooks/vue3-pre-commit-test.json` - 提交前自动运行单元测试
+- `.claude/hooks/vue3-pre-commit-secret-check.json` - 提交前自动检查代码中是否包含敏感信息
+- `.claude/hooks/vue3-pre-tool-use-lint-check.json` - 工具执行前自动检查当前代码lint状态
+- `.claude/hooks/vue3-post-tool-use-type-check.json` - 工具执行后自动执行TypeScript类型检查
+- `.claude/hooks/vue3-post-tool-use-format.json` - 工具执行后自动格式化代码
 
 ### Commands (斜杠命令)
 
-- `.claude/commands/vue3-new-component.md` - 创建新的Vue 3组件
-- `.claude/commands/vue3-new-store.md` - 创建新的Pinia状态模块
-- `.claude/commands/vue3-new-api.md` - 创建新的接口服务模块
-- `.claude/commands/vue3-fix-bug.md` - 分析并修复Vue 3代码bug
-- `.claude/commands/vue3-review-code.md` - 审查Vue 3代码规范
-- `.claude/commands/vue3-optimize-performance.md` - 优化Vue 3应用性能
-- `.claude/commands/vue3-init-project.md` - 初始化企业级Vue 3项目结构
+- `.claude/commands/init-vue3-project.md` - 初始化符合规范的Vue3企业级项目
+- `.claude/commands/create-page-component.md` - 创建符合规范的页面级组件
+- `.claude/commands/create-common-component.md` - 创建全局可复用通用组件
+- `.claude/commands/create-composable.md` - 创建可复用组合式函数
+- `.claude/commands/create-pinia-store.md` - 创建按模块拆分的Pinia状态管理store
+- `.claude/commands/create-api-service.md` - 创建统一管理的API接口服务层
+- `.claude/commands/code-review-vue3.md` - 对当前Vue3代码进行规范审查和优化建议
+- `.claude/commands/add-unit-test.md` - 为指定代码生成单元测试
+- `.claude/commands/format-commit-message.md` - 根据Conventional Commits规范格式化提交信息
 
 ### Agents (子代理)
 
-- `.claude/agents/vue3-code-generator.json` - Vue 3代码生成专用子代理
-- `.claude/agents/vue3-code-reviewer.json` - Vue 3代码审查专用子代理
-- `.claude/agents/vue3-architecture-reviewer.json` - Vue 3项目架构审查子代理
-- `.claude/agents/vue3-security-auditor.json` - Vue 3项目安全审计子代理
-- `.claude/agents/vue3-test-generator.json` - Vue 3测试用例生成子代理
-- `.claude/agents/vue3-bug-fixer.json` - Vue 3Bug修复专用子代理
-- `.claude/agents/vue3-performance-optimizer.json` - Vue 3性能优化专用子代理
+- `.claude/agents/vue3-code-generator.json` - Vue3代码生成专用子代理
+- `.claude/agents/vue3-code-reviewer.json` - Vue3代码审查专用子代理
+- `.claude/agents/vue3-security-auditor.json` - Vue3项目安全审计专用子代理
+- `.claude/agents/vue3-test-generator.json` - Vue3测试用例生成专用子代理
+- `.claude/agents/vue3-project-initializer.json` - Vue3项目初始化专用子代理
+- `.claude/agents/vue3-performance-optimizer.json` - Vue3性能优化专用子代理
+- `.claude/agents/vue3-migration-assistant.json` - Vue2到Vue3代码迁移辅助子代理
 
 ### Rules (规则文件)
 
-- `.claude/rules/rules.yaml` - Vue 3企业级开发核心规则
+- `.claude/rules/vue3-dev-rules.yaml` - Vue3企业级开发核心规则
 
 ### Skills (技能模块)
 
-- `.claude/skills/vue3-project-init.md` - Vue 3企业级项目初始化技能
-- `.claude/skills/vue3-coding-style.md` - Vue 3代码风格规范技能
-- `.claude/skills/vue3-module-dev.md` - Vue 3核心模块开发规范技能
-- `.claude/skills/vue3-test-spec.md` - Vue 3测试规范技能
-- `.claude/skills/vue3-safety-dev.md` - Vue 3安全开发规范技能
+- `.claude/skills/vue3-project-structure.md` - Vue3企业级项目结构规范技能

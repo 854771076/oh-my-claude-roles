@@ -1,0 +1,13 @@
+{
+  "name": "vue3-pre-tool-use-code-check",
+  "description": "Vue 3 代码生成前检查开发规范",
+  "triggers": ["PreToolUse"],
+  "matcher": "*.{vue,ts}",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "echo \"Checking Vue 3 development specification compliance...\"",
+      "timeout": 10
+    }
+  ]
+}

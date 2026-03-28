@@ -15,14 +15,14 @@
     "version": "1.0.0"
   },
   "version": "1.0.0",
-  "generated_at": "2026-03-28T22:53:02.109814",
+  "generated_at": "2026-03-28T23:24:45.608371",
   "llm_provider": "openai",
   "llm_model": "ark-code-latest",
   "components": [
-    "skills",
-    "claude_md",
+    "agents",
     "commands",
     "hooks",
-    "agents"
+    "skills",
+    "claude_md"
   ]
 }

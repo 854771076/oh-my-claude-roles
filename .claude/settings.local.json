@@ -59,7 +59,9 @@
       "Bash(pytest tests/test_packager.py -v)",
       "Bash(ruff check:*)",
       "Bash(python -m ruff check src/services/llm/role_design/nodes.py --fix)",
-      "Bash(python -m pycodestyle src/services/llm/role_design/nodes.py)"
+      "Bash(python -m pycodestyle src/services/llm/role_design/nodes.py)",
+      "Bash(ruff --fix tests/services/llm/generation/test_parsing.py)",
+      "Bash(python -m black tests/services/llm/generation/test_parsing.py)"
     ]
   }
 }

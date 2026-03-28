@@ -116,6 +116,19 @@ oh-roles install backend/python
 oh-roles list
 ```
 
+### AI 交互式创建新角色
+
+```bash
+oh-roles create                  # 交互式创建，自动保存
+oh-roles create roles/my-role.md # 指定输出路径
+```
+
+这个命令会:
+1. 启动交互式 AI 对话，引导你完成角色设计
+2. 一步步询问角色的领域、技术栈、规范要求
+3. 自动生成完整的角色文档 Markdown 文件
+4. 保存到 `roles/` 目录，可以直接使用 `oh-roles install` 安装
+
 ### 强制重新生成（忽略缓存）
 
 ```bash
@@ -143,6 +156,7 @@ oh-roles clean backend/python  # 清理指定角色
 |------|------|------|
 | `backend/python` | 后端 | Python 企业级后端开发规范 |
 | `fullstack/typescript` | 全栈 | TypeScript 全栈开发规范 |
+| `frontend/vue3` | 前端 | Vue 3 + TypeScript 全栈开发助手规范 |
 | `blockchain/ETHBlockChain` | 区块链 | 以太坊 Solidity 智能合约开发 |
 | `ai/Prompt` | AI 提示词 | AI 提示词工程企业级开发规范 |
 
