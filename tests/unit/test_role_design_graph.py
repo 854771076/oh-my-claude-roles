@@ -24,4 +24,37 @@ def test_get_next_step_complete():
         coding_standards="PEP8",
         custom_content="None",
     )
+    assert get_next_step(state) == "ask_project_scale"
+
+
+def test_get_next_step_after_project_scale():
+    state = RoleDesignState(
+        name="test",
+        display_name="Test",
+        description="Test description",
+        category="test",
+        tags=["test"],
+        target_domain="Testing",
+        tech_stack="Python",
+        coding_standards="PEP8",
+        project_scale="medium",
+    )
+    assert get_next_step(state) == "ask_team_size"
+
+
+def test_get_next_step_complete_all():
+    state = RoleDesignState(
+        name="test",
+        display_name="Test",
+        description="Test description",
+        category="test",
+        tags=["test"],
+        target_domain="Testing",
+        tech_stack="Python",
+        coding_standards="PEP8",
+        project_scale="medium",
+        team_size="5 people",
+        compliance_requirements="GDPR",
+        custom_content="None",
+    )
     assert get_next_step(state) == "generate_final"

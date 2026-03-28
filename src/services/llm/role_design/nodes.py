@@ -30,6 +30,12 @@ def get_next_step(state: RoleDesignState) -> str:
         return "ask_tech_stack"
     elif state.coding_standards is None:
         return "ask_coding_standards"
+    elif state.project_scale is None:
+        return "ask_project_scale"
+    elif state.team_size is None:
+        return "ask_team_size"
+    elif state.compliance_requirements is None:
+        return "ask_compliance_requirements"
     elif state.custom_content is None:
         return "ask_custom_content"
     else:
@@ -57,6 +63,12 @@ def collect_user_input(state: RoleDesignState, user_input: str) -> RoleDesignSta
         state.tech_stack = user_input.strip()
     elif current_step == "ask_coding_standards":
         state.coding_standards = user_input.strip()
+    elif current_step == "ask_project_scale":
+        state.project_scale = user_input.strip()
+    elif current_step == "ask_team_size":
+        state.team_size = user_input.strip()
+    elif current_step == "ask_compliance_requirements":
+        state.compliance_requirements = user_input.strip()
     elif current_step == "ask_custom_content":
         state.custom_content = user_input.strip()
 
@@ -81,6 +93,9 @@ async def generate_question(
         f"- target_domain: {state.target_domain}",
         f"- tech_stack: {state.tech_stack}",
         f"- coding_standards: {state.coding_standards}",
+        f"- project_scale: {state.project_scale}",
+        f"- team_size: {state.team_size}",
+        f"- compliance_requirements: {state.compliance_requirements}",
         f"- custom_content: {state.custom_content}",
     ])
 
@@ -95,6 +110,9 @@ async def generate_question(
         target_domain=state.target_domain or "(not collected)",
         tech_stack=state.tech_stack or "(not collected)",
         coding_standards=state.coding_standards or "(not collected)",
+        project_scale=state.project_scale or "(not collected)",
+        team_size=state.team_size or "(not collected)",
+        compliance_requirements=state.compliance_requirements or "(not collected)",
         custom_content=state.custom_content or "(not collected)",
     )
 
@@ -123,6 +141,18 @@ tech_stack:
 coding_standards:
 
 {state.coding_standards}
+
+project_scale:
+
+{state.project_scale}
+
+team_size:
+
+{state.team_size}
+
+compliance_requirements:
+
+{state.compliance_requirements}
 
 custom_content:
 
