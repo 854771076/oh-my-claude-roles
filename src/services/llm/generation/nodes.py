@@ -1,6 +1,7 @@
 from typing import List, TYPE_CHECKING
 import importlib.resources
 import re
+from loguru import logger
 from langchain_core.messages import HumanMessage
 from src.models import RoleMeta, PackageMeta, ToolComponent
 from src.validator import OutputValidator
@@ -22,8 +23,10 @@ def load_prompt(filename: str) -> str:
 async def read_source_node(state: "GenerationWorkflowState") -> dict:
     """Read source document content."""
     role = state["role"]
+    logger.debug(f"Reading source: {role.source_path}")
     with open(role.source_path, "r", encoding="utf-8") as f:
         content = f.read()
+    logger.debug(f"Source loaded: {len(content)} characters")
     return {"source_content": content}
 
 
@@ -34,16 +37,23 @@ async def parallel_generation_node(state: "GenerationWorkflowState") -> dict:
     role = state["role"]
     source_content = state["source_content"]
     requested = state["requested_components"]
-    llm = state["__llm"]
+    llm = state["_llm"]
+    concurrency = state["_concurrency"]
 
-    semaphore = asyncio.Semaphore(state["__concurrency"])
+    logger.info(f"Workflow starting parallel generation: {len(requested)} components, concurrency={concurrency} for {role.category}/{role.name}")
+    semaphore = asyncio.Semaphore(concurrency)
 
     async def generate_one(comp_type: str) -> ToolComponent | None:
         async with semaphore:
+            logger.info(f"Generating component: {comp_type}")
             prompt = build_prompt(comp_type, source_content, role, requested)
+            logger.debug(f"Prompt built: {len(prompt)} characters")
             response = await llm.ainvoke([HumanMessage(content=prompt)])
             content = response.content.strip()
-            return parse_response(comp_type, content, role)
+            logger.debug(f"LLM response: {len(content)} characters")
+            parsed = parse_response(comp_type, content, role)
+            logger.success(f"Component {comp_type} parsed: {len(parsed)} file(s)")
+            return parsed
 
     tasks = [generate_one(comp) for comp in requested]
     results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -53,6 +63,7 @@ async def parallel_generation_node(state: "GenerationWorkflowState") -> dict:
 
     for comp_type, result in zip(requested, results):
         if isinstance(result, Exception):
+            logger.error(f"Component generation failed: {comp_type}, error: {str(result)}")
             failed.append(comp_type)
             continue
         if result:
@@ -61,6 +72,7 @@ async def parallel_generation_node(state: "GenerationWorkflowState") -> dict:
             else:
                 generated.append(result)
 
+    logger.info(f"Parallel generation complete: {len(generated)} files generated, {len(failed)} failed")
     return {
         "generated_components": generated,
         "failed_components": failed,
@@ -69,24 +81,23 @@ async def parallel_generation_node(state: "GenerationWorkflowState") -> dict:
 
 async def validate_components_node(state: "GenerationWorkflowState") -> dict:
     """Validate all generated components against schema."""
-    validator = state["__validator"]
+    validator = state["_validator"]
     generated = state["generated_components"]
 
+    logger.info(f"Validating {len(generated)} generated components")
     for comp in generated:
         try:
             comp.schema_valid = validator.validate(comp)
+            if not comp.schema_valid:
+                logger.warning(f"Validation failed for: {comp.filename}")
         except Exception:
             comp.schema_valid = False
+            logger.warning(f"Validation exception for: {comp.filename}")
 
-    # Filter out invalid components
-    valid = [c for c in generated if c.schema_valid]
-    failed = state["failed_components"] + [
-        c.type for c in generated if not c.schema_valid
-    ]
-
+    logger.info(f"Validation complete: {len(generated)} components processed")
     return {
-        "validated_components": valid,
-        "failed_components": failed,
+        "validated_components": generated,
+        "failed_components": state["failed_components"],
     }
 
 
@@ -97,7 +108,10 @@ async def build_package_node(state: "GenerationWorkflowState") -> dict:
     role = state["role"]
     components = state["validated_components"]
 
+    logger.info(f"Building final package: {len(components)} valid components")
+
     if not components and state["failed_components"]:
+        logger.error(f"All components failed generation: {state['failed_components']}")
         raise GenerationFailedError(
             f"All components failed generation: {', '.join(state['failed_components'])}"
         )
@@ -111,6 +125,7 @@ async def build_package_node(state: "GenerationWorkflowState") -> dict:
         components=[c.type for c in components],
     )
 
+    logger.success(f"Package generation complete: {role.category}/{role.name}")
     return {"package_meta": package_meta}
 
 

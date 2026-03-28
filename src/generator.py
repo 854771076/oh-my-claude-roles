@@ -2,12 +2,12 @@ import asyncio
 import re
 from typing import List, Tuple
 import tenacity
+from loguru import logger
 from langchain_core.messages import HumanMessage
 from src.services.llm.factory import create_llm
 from src.services.llm.generation.workflow import create_generation_workflow
 from src.config import settings
 from src.models import RoleMeta, PackageMeta, ToolComponent
-from src.prompts import PROMPTS
 from src.validator import OutputValidator
 from src.exceptions import (
     LLMConfigError,
@@ -20,7 +20,7 @@ from src.exceptions import (
 class ToolGenerator:
     """Generate tool components using LLM"""
 
-    def __init__(self, use_workflow: bool = False):
+    def __init__(self, use_workflow: bool = True):
         self.llm = create_llm()
         self.concurrency = settings.llm_concurrency
         self.validator = OutputValidator()
@@ -49,16 +49,26 @@ class ToolGenerator:
     ) -> Tuple[PackageMeta, List[ToolComponent]]:
         """Generate complete tool package for a role (legacy implementation)"""
         components = components or settings.default_components
+        logger.info(f"Starting generation for role: {role.category}/{role.name}, components: {components}")
 
         # Read source content
         source_content = self._read_source(role.source_path)
+        logger.debug(f"Read source content: {len(source_content)} characters")
 
         # Generate components concurrently with semaphore limit
         semaphore = asyncio.Semaphore(self.concurrency)
+        logger.debug(f"Concurrency limit: {self.concurrency}")
 
         async def generate_one(comp_type: str) -> ToolComponent | None:
             async with semaphore:
-                return await self._generate_component(comp_type, source_content, role, components)
+                logger.info(f"Generating component: {comp_type}")
+                result = await self._generate_component(comp_type, source_content, role, components)
+                if result is None:
+                    logger.warning(f"Component generation failed: {comp_type}")
+                else:
+                    count = len(result) if isinstance(result, list) else 1
+                    logger.success(f"Component generated: {comp_type} ({count} file(s))")
+                return result
 
         tasks = [generate_one(comp_type) for comp_type in components]
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -70,6 +80,7 @@ class ToolGenerator:
         for comp_type, result in zip(components, results):
             if isinstance(result, Exception):
                 failed_components.append(comp_type)
+                logger.error(f"Component generation threw exception: {comp_type}, error: {str(result)}")
                 continue
             if result is not None:
                 # _generate_component can return multiple components
@@ -77,6 +88,8 @@ class ToolGenerator:
                     generated_components.extend(result)
                 else:
                     generated_components.append(result)
+
+        logger.info(f"Generation complete: {len(generated_components)} total file(s), {len(failed_components)} failed component(s)")
 
         if not generated_components and failed_components:
             raise GenerationFailedError(
@@ -105,19 +118,25 @@ class ToolGenerator:
     ) -> List[ToolComponent] | ToolComponent | None:
         """Generate single component with validation"""
         prompt = self._build_prompt(component_type, source_content, role, all_components)
+        logger.debug(f"Built prompt for {component_type}: {len(prompt)} characters")
 
         try:
             content = await self._call_llm(prompt)
-        except (LLMTimeoutError, LLMRateLimitError, GenerationFailedError):
+        except (LLMTimeoutError, LLMRateLimitError, GenerationFailedError) as e:
+            logger.warning(f"LLM generation failed for {component_type}: {str(e)}")
             return None
 
         components = self._parse_response(component_type, content, role)
+        logger.debug(f"Parsed {len(components)} component(s) from {component_type} response")
 
         for comp in components:
             try:
                 comp.schema_valid = self.validator.validate(comp)
-            except Exception:
+                if not comp.schema_valid:
+                    logger.warning(f"Schema validation failed for: {comp.filename}")
+            except Exception as e:
                 comp.schema_valid = False
+                logger.warning(f"Validation exception for {comp.filename}: {str(e)}")
 
         # Return all parsed components
         return components
@@ -130,7 +149,8 @@ class ToolGenerator:
         all_components: list[str],
     ) -> str:
         """Build prompt from template"""
-        template = PROMPTS[component_type]
+        from src.services.llm.generation.utils import load_prompt
+        template = load_prompt(f"{component_type}.md")
         template_vars = {
             "role_name": role.display_name,
             "role_description": role.description,
@@ -154,18 +174,24 @@ class ToolGenerator:
         stop=tenacity.stop_after_attempt(3),
         wait=tenacity.wait_exponential(multiplier=1, min=2, max=10),
         retry=tenacity.retry_if_exception_type((LLMTimeoutError, LLMRateLimitError)),
-        before_sleep=lambda retry_state: None,
+        before_sleep=lambda retry_state: logger.warning(f"Retrying LLM call (attempt {retry_state.attempt_number + 1})"),
     )
     async def _call_llm(self, prompt: str) -> str:
         """Call LLM API with retries"""
+        logger.debug(f"Calling LLM with {len(prompt)} character prompt")
         try:
             response = await self.llm.ainvoke([HumanMessage(content=prompt)])
-            return response.content.strip()
+            content = response.content.strip()
+            logger.debug(f"LLM response received: {len(content)} characters")
+            return content
         except TimeoutError:
+            logger.error("LLM call timed out")
             raise LLMTimeoutError("LLM call timed out")
         except Exception as e:
             if "rate limit" in str(e).lower():
+                logger.error(f"LLM rate limit exceeded: {str(e)}")
                 raise LLMRateLimitError(f"LLM rate limit: {e}")
+            logger.error(f"LLM call failed: {str(e)}")
             raise GenerationFailedError(f"LLM call failed: {e}")
 
     def _read_source(self, source_path: str) -> str:
@@ -273,9 +299,9 @@ class ToolGenerator:
             "failed_components": [],
             "package_meta": None,
             "error": None,
-            "__llm": self.llm,
-            "__validator": self.validator,
-            "__concurrency": self.concurrency,
+            "_llm": self.llm,
+            "_validator": self.validator,
+            "_concurrency": self.concurrency,
         }
 
         final_state = await self.workflow.ainvoke(initial_state)
