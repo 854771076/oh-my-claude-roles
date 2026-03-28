@@ -1,4 +1,3 @@
-import pytest
 from src.services.llm.generation.nodes import parse_response
 from src.models import RoleMeta
 
@@ -11,6 +10,7 @@ test_role = RoleMeta(
     source_hash="abc123",
     source_path="test.md",
 )
+
 
 def test_correct_format_multiple_files():
     content = """
@@ -28,6 +28,7 @@ Content of second file.
     assert components[1].filename == "second-command.md"
     assert "Content of first file" in components[0].content
 
+
 def test_content_on_same_line_as_filename():
     content = """
 ## 文件名: test-command.md Here is some extra content that shouldn't be here
@@ -41,6 +42,7 @@ This is the actual content.
     assert "This is the actual content" in components[0].content
     assert "/" not in components[0].target_path
 
+
 def test_filename_with_invalid_characters():
     content = """
 ## 文件名: my/file:name*.md
@@ -53,6 +55,7 @@ File content here.
     assert "myfilename.md" in components[0].filename
     assert "File content here" in components[0].content
 
+
 def test_filename_with_spaces_converted_to_dashes():
     content = """
 ## 文件名: my test file.md
@@ -62,6 +65,7 @@ Content here.
     components = parse_response("commands", content, test_role)
     assert len(components) == 1
     assert components[0].filename == "my-test-file.md"
+
 
 def test_content_captured_as_filename():
     # This is the bug we fixed - LLM didn't put filename on its own line
@@ -75,6 +79,7 @@ And this is the actual file content that should be in the file.
     assert components[0].filename == "test-role.md"
     assert "And this is the actual file content" in components[0].content
 
+
 def test_no_filename_header_single_file():
     content = """
 This is just the file content with no header at all.
@@ -84,6 +89,7 @@ Second line here.
     assert len(components) == 1
     assert components[0].filename == "test-role.md"
     assert "This is just the file content" in components[0].content
+
 
 def test_content_before_first_filename():
     content = """
@@ -100,6 +106,7 @@ Content two.
     assert components[0].filename == "first.md"
     assert components[1].filename == "second.md"
     assert "Content one" in components[0].content
+
 
 def test_empty_filename_falls_back():
     content = """
