@@ -1,12 +1,13 @@
 from typing import List, TYPE_CHECKING
 import importlib.resources
 import re
+import tenacity
 from loguru import logger
 from langchain_core.messages import HumanMessage
 from src.models import RoleMeta, PackageMeta, ToolComponent
 from src.validator import OutputValidator
 from src.config import settings
-from src.exceptions import GenerationFailedError
+from src.exceptions import GenerationFailedError, LLMTimeoutError, LLMRateLimitError
 
 if TYPE_CHECKING:
     from .workflow import GenerationWorkflowState
@@ -43,14 +44,40 @@ async def parallel_generation_node(state: "GenerationWorkflowState") -> dict:
     logger.info(f"Workflow starting parallel generation: {len(requested)} components, concurrency={concurrency} for {role.category}/{role.name}")
     semaphore = asyncio.Semaphore(concurrency)
 
+    @tenacity.retry(
+        stop=tenacity.stop_after_attempt(3),
+        wait=tenacity.wait_exponential(multiplier=1, min=2, max=10),
+        retry=tenacity.retry_if_exception_type((LLMTimeoutError, LLMRateLimitError)),
+        before_sleep=lambda retry_state: logger.warning(f"Retrying LLM call (attempt {retry_state.attempt_number + 1})"),
+    )
+    async def call_llm_with_retry(prompt: str) -> str:
+        """Call LLM API with retries (same as legacy _call_llm)"""
+        logger.debug(f"Calling LLM with {len(prompt)} character prompt")
+        try:
+            response = await llm.ainvoke([HumanMessage(content=prompt)])
+            content = response.content.strip()
+            logger.debug(f"LLM response received: {len(content)} characters")
+            return content
+        except TimeoutError:
+            logger.error("LLM call timed out")
+            raise LLMTimeoutError("LLM call timed out")
+        except Exception as e:
+            if "rate limit" in str(e).lower():
+                logger.error(f"LLM rate limit exceeded: {str(e)}")
+                raise LLMRateLimitError(f"LLM rate limit: {e}")
+            logger.error(f"LLM call failed: {str(e)}")
+            raise GenerationFailedError(f"LLM call failed: {e}")
+
     async def generate_one(comp_type: str) -> ToolComponent | None:
         async with semaphore:
             logger.info(f"Generating component: {comp_type}")
             prompt = build_prompt(comp_type, source_content, role, requested)
             logger.debug(f"Prompt built: {len(prompt)} characters")
-            response = await llm.ainvoke([HumanMessage(content=prompt)])
-            content = response.content.strip()
-            logger.debug(f"LLM response: {len(content)} characters")
+            try:
+                content = await call_llm_with_retry(prompt)
+            except (LLMTimeoutError, LLMRateLimitError, GenerationFailedError) as e:
+                logger.warning(f"LLM generation failed for {comp_type}: {str(e)}")
+                return None
             parsed = parse_response(comp_type, content, role)
             logger.success(f"Component {comp_type} parsed: {len(parsed)} file(s)")
             return parsed
