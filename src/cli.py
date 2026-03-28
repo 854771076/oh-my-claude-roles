@@ -329,6 +329,9 @@ def create(
     a complete role specification document, and saves the final result.
     """
     llm = create_llm()
+    if verbose:
+        from src.logger import logger
+        logger.enable("debug")
     output_path = str(output) if output else None
     run_interactive(llm, output_path)
 

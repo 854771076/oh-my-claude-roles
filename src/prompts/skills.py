@@ -16,10 +16,10 @@ PROMPT = """你是一个 Claude Code Skills 设计专家。根据以下角色规
 
 输出格式：
 每个文件:
-## 文件名: skills/{filename}.md
+## 文件名: skills/{{filename}}.md
 ---
-name: {skill_name}
-description: {skill_description}
+name: {{skill_name}}
+description: {{skill_description}}
 triggers:
   - pattern: 触发正则
   - pattern: 另一个触发正则

@@ -21,8 +21,8 @@ PROMPT = """你是一个 Claude Code Agents 配置专家。根据以下角色规
 
 输出格式：
 每个文件:
-## 文件名: agents/{filename}.json
+## 文件名: agents/{{filename}}.json
 ```json
-{...}
+{{...}}
 ```
 """
