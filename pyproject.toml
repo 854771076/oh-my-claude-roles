@@ -39,22 +39,6 @@ oh-roles = "src.cli:app"
 
 [project.optional-dependencies]
 dev = [
-    "typer>=0.12.0",
-    "rich>=13.0.0",
-    "questionary>=2.0.0",
-    "pydantic>=2.0.0",
-    "pydantic-settings>=2.0.0",
-    "loguru>=0.7.0",
-    "pyyaml>=6.0",
-    "python-frontmatter>=1.0.0",
-    "jsonschema>=4.0.0",
-    "tenacity>=8.0.0",
-    "langchain>=0.3.0",
-    "langgraph>=0.2.0",
-    "langchain-openai>=0.2.0",
-    "langchain-anthropic>=0.1.0",
-    "langchain-google-genai>=2.0",
-    "langchain-community>=0.3.0",
     "pytest>=7.0",
     "pytest-cov>=4.0",
     "pytest-asyncio>=0.21",
@@ -62,6 +46,7 @@ dev = [
     "isort>=5.0",
     "mypy>=1.0",
     "ruff>=0.1",
+    "types-PyYAML>=6.0",
 ]
 
 [tool.pytest.ini_options]
