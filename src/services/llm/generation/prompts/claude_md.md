@@ -76,23 +76,23 @@
 
 ### Hooks (钩子脚本)
 
-- `.claude/hooks/{hook-name}.json` - 钩子功能描述
+- `.claude/hooks/{{hook-name}}.json` - 钩子功能描述
 
 ### Commands (斜杠命令)
 
-- `.claude/commands/{command-name}.md` - 命令功能描述
+- `.claude/commands/{{command-name}}.md` - 命令功能描述
 
 ### Agents (子代理)
 
-- `.claude/agents/{agent-name}.json` - 代理功能描述
+- `.claude/agents/{{agent-name}}.json` - 代理功能描述
 
 ### Rules (规则文件)
 
-- `.claude/rules/{rule-name}.md` - 规则功能描述
+- `.claude/rules/{{rule-name}}.md` - 规则功能描述
 
 ### Skills (技能模块)
 
-- `.claude/skills/{skill-name}/SKILL.md` - 技能功能描述
+- `.claude/skills/{{skill-name}}/SKILL.md` - 技能功能描述
 ```
 
 ## Claude 合规要求
