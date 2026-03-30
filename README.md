@@ -7,8 +7,7 @@
 <p align="center">
 <a href="https://pypi.org/project/oh-my-claude-roles"><img src="https://img.shields.io/pypi/v/oh-my-claude-roles.svg" alt="PyPI version"></a>
 <a href="https://pypi.org/project/oh-my-claude-roles"><img src="https://img.shields.io/pypi/pyversions/oh-my-claude-roles.svg" alt="Python versions"></a>
-<a href="https://github.com/charleydev/oh-my-claude-roles/actions">
-<a href="https://github.com/charleydev/oh-my-claude-roles/blob/master/LICENSE"><img src="https://img.shields.io/github/license/charleydev/oh-my-claude-roles.svg" alt="License"></a>
+<a href="https://github.com/854771076/oh-my-claude-roles/blob/master/LICENSE"><img src="https://img.shields.io/github/license/854771076/oh-my-claude-roles.svg" alt="License"></a>
 </p>
 
 ## 📖 目录
