@@ -338,10 +338,12 @@ def _get_extension(component_type: str) -> str:
 
 def _get_target_path(component_type: str, filename: str) -> str:
     """Get target installation path"""
-    # If filename already contains a path (includes /), use it as-is
+    # If filename already contains a path (includes / or \), use it as-is
     # This prevents double nesting when LLM already output the component type prefix
-    if '/' in filename:
-        return filename
+    # Handles both forward slashes (Unix/macOS/Linux) and backslashes (Windows)
+    if '/' in filename or '\\' in filename:
+        # Normalize to forward slashes for consistent path handling across platforms
+        return filename.replace('\\', '/')
     path_map = {
         "claude_md": "CLAUDE.md",
         "hooks": f"hooks/{filename}",
