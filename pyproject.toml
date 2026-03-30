@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "oh-my-claude-roles"
-version = "0.1.2"
+version = "0.1.3"
 authors = []
 description = "Claude Code 角色工具包管理器 - 从原始角色文档一键生成安装工具包"
 readme = "README.md"
