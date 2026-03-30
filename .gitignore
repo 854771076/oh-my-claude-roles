@@ -22,3 +22,5 @@ packages/.DS_Store
 .vscode/
 .idea/
 docs
+# Git worktrees
+.worktrees/
