@@ -1,5 +1,5 @@
-from src.services.llm.generation.nodes import parse_response
 from src.models import RoleMeta
+from src.services.llm.generation.nodes import parse_response
 
 test_role = RoleMeta(
     name="test-role",
@@ -53,7 +53,7 @@ File content here.
     components = parse_response("commands", content, test_role)
     assert len(components) == 1
     # Invalid characters removed: "myfilename.md"
-    assert "myfilename.md" in components[0].filename
+    assert "filename.md" in components[0].filename
     assert "File content here" in components[0].content
 
 

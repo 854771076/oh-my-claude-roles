@@ -1,5 +1,4 @@
 import json
-import shutil
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -87,7 +86,8 @@ class PackageCache:
 
         # Save each component by type directory
         for comp in components:
-            # comp.target_path already includes the type subdirectory like "hooks/filename.json"
+            # comp.target_path already includes type subdirectory
+            # like "hooks/filename.json"
             comp_file = cache_dir / comp.target_path
             comp_file.parent.mkdir(parents=True, exist_ok=True)
             comp_file.write_text(comp.content, encoding="utf-8")

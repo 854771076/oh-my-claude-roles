@@ -1,13 +1,14 @@
 import asyncio
 from pathlib import Path
 from typing import Optional
+
 from langchain_core.language_models.chat_models import BaseChatModel
 from rich.console import Console
 from rich.markdown import Markdown
-from .state import RoleDesignState
-from .nodes import load_prompt
-from .graph import create_role_design_graph
 
+from .graph import create_role_design_graph
+from .nodes import load_prompt
+from .state import RoleDesignState
 
 console = Console()
 
@@ -68,13 +69,19 @@ class CLIRoleDesignChat:
 
         # Show final document preview
         console.print("\n[green]✅ Design complete! Final document:[/green]\n")
-        preview = state.final_document[:500] + ("..." if len(state.final_document) > 500 else "")
+        ellipsis = "..." if len(state.final_document) > 500 else ""
+        preview = state.final_document[:500] + ellipsis
         console.print(Markdown(preview))
 
         # Get output path if not provided
         if output_path is None:
-            default_path = f"roles/{state.category}/{state.name}.md" if state.category else f"roles/{state.name}.md"
-            console.print(f"\nWhere would you like to save this file? (default: {default_path})")
+            default_path = (
+                f"roles/{state.category}/{state.name}.md" if state.category
+                else f"roles/{state.name}.md"
+            )
+            console.print(
+                f"\nWhere would you like to save this file? (default: {default_path})"
+            )
             try:
                 user_input = input("> ").strip()
                 output_path = user_input or default_path

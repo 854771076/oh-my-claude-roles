@@ -1,6 +1,7 @@
 """Shared utility functions for LLM generation workflows and legacy generator."""
 import importlib.resources
 from typing import List
+
 from src.models import RoleMeta, ToolComponent
 
 
@@ -35,12 +36,17 @@ def build_prompt(
             "rules": "Rules - 规则文件",
             "skills": "Skills - 技能文件",
         }
-        lines = [f"- {comp}: {component_descriptions.get(comp, comp)}" for comp in all_components]
+        lines = [
+            f"- {comp}: {component_descriptions.get(comp, comp)}"
+            for comp in all_components
+        ]
         template_vars["component_list"] = "\n".join(lines)
     return template.format(**template_vars)
 
 
-def parse_response(component_type: str, content: str, role: RoleMeta) -> List[ToolComponent]:
+def parse_response(
+    component_type: str, content: str, role: RoleMeta
+) -> List[ToolComponent]:
     """Parse LLM response into ToolComponents. Reuses logic from ToolGenerator."""
     components: List[ToolComponent] = []
 

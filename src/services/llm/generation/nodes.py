@@ -1,13 +1,14 @@
-from typing import List, TYPE_CHECKING
 import importlib.resources
 import re
+from typing import TYPE_CHECKING, List
+
 import tenacity
-from loguru import logger
 from langchain_core.messages import HumanMessage
-from src.models import RoleMeta, PackageMeta, ToolComponent
-from src.validator import OutputValidator
+from loguru import logger
+
 from src.config import settings
-from src.exceptions import GenerationFailedError, LLMTimeoutError, LLMRateLimitError
+from src.exceptions import GenerationFailedError, LLMRateLimitError, LLMTimeoutError
+from src.models import PackageMeta, RoleMeta, ToolComponent
 
 if TYPE_CHECKING:
     from .workflow import GenerationWorkflowState
@@ -32,8 +33,9 @@ async def read_source_node(state: "GenerationWorkflowState") -> dict:
 
 
 async def parallel_generation_node(state: "GenerationWorkflowState") -> dict:
-    """Generate all requested components: generate all non-claude_md first, then generate claude_md last.
+    """Generate all requested components.
 
+    Generate all non-claude_md first, then generate claude_md last.
     This ensures CLAUDE.md can index all other generated files.
     """
     import asyncio
@@ -48,15 +50,20 @@ async def parallel_generation_node(state: "GenerationWorkflowState") -> dict:
     other_components = [c for c in requested if c != "claude_md"]
     has_claude_md = "claude_md" in requested
 
-    logger.info(f"Workflow starting generation: {len(requested)} total components, "
-                f"{len(other_components)} first, CLAUDE.md generated last for {role.category}/{role.name}")
+    logger.info(
+        f"Workflow starting generation: {len(requested)} total components, "
+        f"{len(other_components)} first, "
+        f"CLAUDE.md generated last for {role.category}/{role.name}"
+    )
     semaphore = asyncio.Semaphore(concurrency)
 
     @tenacity.retry(
         stop=tenacity.stop_after_attempt(3),
         wait=tenacity.wait_exponential(multiplier=1, min=2, max=10),
         retry=tenacity.retry_if_exception_type((LLMTimeoutError, LLMRateLimitError)),
-        before_sleep=lambda retry_state: logger.warning(f"Retrying LLM call (attempt {retry_state.attempt_number + 1})"),
+        before_sleep=lambda retry_state: logger.warning(
+            f"Retrying LLM call (attempt {retry_state.attempt_number + 1})"
+        ),
     )
     async def call_llm_with_retry(prompt: str) -> str:
         """Call LLM API with retries (same as legacy _call_llm)"""
@@ -83,7 +90,9 @@ async def parallel_generation_node(state: "GenerationWorkflowState") -> dict:
     ) -> ToolComponent | None:
         async with semaphore:
             logger.info(f"Generating component: {comp_type}")
-            prompt = build_prompt(comp_type, source_content, role, all_components, generated_components)
+            prompt = build_prompt(
+                comp_type, source_content, role, all_components, generated_components
+            )
             # logger.debug(prompt)
             logger.debug(f"Prompt built: {len(prompt)} characters")
             try:
@@ -106,7 +115,9 @@ async def parallel_generation_node(state: "GenerationWorkflowState") -> dict:
 
         for comp_type, result in zip(other_components, results):
             if isinstance(result, Exception):
-                logger.exception(f"Component generation failed66: {comp_type}, error: {result}")
+                logger.exception(
+                    f"Component generation failed: {comp_type}, error: {result}"
+                )
                 failed.append(comp_type)
                 continue
             if result:
@@ -117,7 +128,9 @@ async def parallel_generation_node(state: "GenerationWorkflowState") -> dict:
 
     # Generate CLAUDE.md last - now it gets the list of all other generated files
     if has_claude_md:
-        logger.info("Generating CLAUDE.md last, with complete list of other component files")
+        logger.info(
+            "Generating CLAUDE.md last, with complete list of other component files"
+        )
         result = await generate_one("claude_md", requested, generated)
         if isinstance(result, Exception):
             failed.append("claude_md")
@@ -131,7 +144,9 @@ async def parallel_generation_node(state: "GenerationWorkflowState") -> dict:
             else:
                 generated.append(result)
 
-    logger.info(f"Generation complete: {len(generated)} files generated, {len(failed)} failed")
+    logger.info(
+        f"Generation complete: {len(generated)} files generated, {len(failed)} failed"
+    )
     return {
         "generated_components": generated,
         "failed_components": failed,
@@ -161,7 +176,9 @@ async def validate_components_node(state: "GenerationWorkflowState") -> dict:
             if comp.type not in failed:
                 failed.append(comp.type)
 
-    logger.info(f"Validation complete: {len(valid_components)} valid, {len(failed)} failed")
+    logger.info(
+        f"Validation complete: {len(valid_components)} valid, {len(failed)} failed"
+    )
     return {
         "validated_components": valid_components,
         "failed_components": failed,
@@ -236,15 +253,17 @@ def build_prompt(
                 for comp in all_components if comp != "claude_md"
             ]
             template_vars["component_list"] = "\n".join(lines)
-    return teplate_format(template, template_vars)
+    return template_format(template, template_vars)
 
-def teplate_format(template: str, template_vars: dict) -> str:
+def template_format(template: str, template_vars: dict) -> str:
     """Format template with variables."""
     for key, value in template_vars.items():
         template = template.replace(f"{key}", value)
     return template
 
-def parse_response(component_type: str, content: str, role: RoleMeta) -> List[ToolComponent]:
+def parse_response(
+    component_type: str, content: str, role: RoleMeta
+) -> List[ToolComponent]:
     """Parse LLM response into ToolComponents. Reuses logic from ToolGenerator."""
     components: List[ToolComponent] = []
 
@@ -293,7 +312,8 @@ def parse_response(component_type: str, content: str, role: RoleMeta) -> List[To
 
             # Clean filename
             filename = raw_filename.split('\n')[0]
-            # Remove illegal characters for Windows file names, BUT KEEP path separators (/ \)
+            # Remove illegal Windows filename characters
+            # BUT KEEP path separators (/ \)
             filename = re.sub(r'[<>:"\|?*]', '', filename)
             filename = filename.replace(' ', '-')
 
@@ -312,9 +332,12 @@ def parse_response(component_type: str, content: str, role: RoleMeta) -> List[To
                 first_newline = file_content.find("\n")
                 if first_newline != -1:
                     file_content = file_content[first_newline+1:].rstrip()
-                    # If the first line is just "json" (language identifier), remove it as well
+                    # If the first line is just "json" (language identifier), remove it
                     first_line = file_content.split('\n', 1)[0].strip()
-                    if first_line.lower() in ('json', 'yaml', 'markdown', 'md') and len(file_content.split('\n', 1)) > 1:
+                    if (
+                        first_line.lower() in ('json', 'yaml', 'markdown', 'md')
+                        and len(file_content.split('\n', 1)) > 1
+                    ):
                         file_content = file_content.split('\n', 1)[1].lstrip()
                 else:
                     file_content = file_content[3:].rstrip()

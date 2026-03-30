@@ -4,10 +4,12 @@ from typing import Optional
 
 import questionary
 import typer
-from loguru import logger
 from rich.console import Console
-from rich.prompt import Confirm, Prompt
+from rich.prompt import Confirm
 from rich.table import Table
+
+from src.services.llm.factory import create_llm
+from src.services.llm.role_design.cli_chat import run_interactive
 
 from . import __version__
 from .config import settings
@@ -17,8 +19,6 @@ from .installer import ToolInstaller
 from .logger import setup_logger
 from .packager import PackageCache
 from .scanner import RoleScanner
-from src.services.llm.factory import create_llm
-from src.services.llm.role_design.cli_chat import run_interactive
 
 app = typer.Typer(
     name="oh-roles",
@@ -223,7 +223,7 @@ def generate(
             console.print(f"[red]生成失败: {e.message}[/red]")
             raise typer.Exit(1)
 
-    console.print(f"[green]✅ 生成完成，缓存已保存[/green]")
+    console.print("[green]✅ 生成完成，缓存已保存[/green]")
     console.print(f"  角色: {role.display_name}")
     console.print(f"  组件: {len(components)} 个")
 

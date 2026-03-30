@@ -2,7 +2,9 @@ import hashlib
 import re
 from pathlib import Path
 from typing import List, Optional
+
 import frontmatter
+
 from .config import settings
 from .models import RoleMeta
 
@@ -92,7 +94,12 @@ class RoleScanner:
             if line.startswith("# "):
                 found_title = True
                 continue
-            if found_title and line and not line.startswith("#") and not line.startswith("---"):
+            if (
+                found_title
+                and line
+                and not line.startswith("#")
+                and not line.startswith("---")
+            ):
                 return line
         return None
 

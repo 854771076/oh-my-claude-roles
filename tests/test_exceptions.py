@@ -1,18 +1,18 @@
-import pytest
 from src.exceptions import (
-    OhRolesError,
-    RoleNotFoundError,
     CacheCorruptedError,
-    LLMConfigError,
-    LLMTimeoutError,
-    LLMRateLimitError,
-    GenerationFailedError,
-    ValidationError,
-    InstallError,
-    LLMProviderError,
-    RoleDesignError,
     DocumentSaveError,
+    GenerationFailedError,
+    InstallError,
+    LLMConfigError,
+    LLMProviderError,
+    LLMRateLimitError,
+    LLMTimeoutError,
+    OhRolesError,
+    RoleDesignError,
+    RoleNotFoundError,
+    ValidationError,
 )
+
 
 def test_exception_codes():
     assert RoleNotFoundError.code == "ROLE_NOT_FOUND"

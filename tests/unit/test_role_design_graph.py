@@ -1,5 +1,5 @@
-from src.services.llm.role_design.state import RoleDesignState
 from src.services.llm.role_design.nodes import get_next_step
+from src.services.llm.role_design.state import RoleDesignState
 
 
 def test_get_next_step_start():

@@ -1,7 +1,8 @@
 from pathlib import Path
-from typing import List, Dict, Optional
-from .models import ToolComponent
+from typing import Dict, List
+
 from .exceptions import InstallError
+from .models import ToolComponent
 
 
 class ToolInstaller:

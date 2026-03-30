@@ -1,6 +1,5 @@
-import pytest
-from src.services.llm.generation.nodes import build_prompt
 from src.models import RoleMeta
+from src.services.llm.generation.utils import build_prompt
 
 
 def test_build_prompt():

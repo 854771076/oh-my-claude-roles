@@ -1,7 +1,8 @@
 import pytest
-from src.validator import OutputValidator
-from src.models import ToolComponent
+
 from src.exceptions import ValidationError
+from src.models import ToolComponent
+from src.validator import OutputValidator
 
 
 def test_validate_json_valid():

@@ -1,5 +1,5 @@
-from typing import Optional
 from langchain_core.language_models.chat_models import BaseChatModel
+
 from src.config import settings
 from src.exceptions import LLMProviderError
 

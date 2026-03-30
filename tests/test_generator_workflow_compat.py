@@ -1,8 +1,10 @@
+from unittest.mock import AsyncMock, patch
+
 import pytest
-from unittest.mock import patch, AsyncMock, MagicMock
+
+from src.exceptions import GenerationFailedError, LLMRateLimitError
 from src.generator import ToolGenerator
-from src.models import RoleMeta, PackageMeta, ToolComponent
-from src.exceptions import LLMTimeoutError, LLMRateLimitError, GenerationFailedError
+from src.models import PackageMeta, RoleMeta, ToolComponent
 
 
 @pytest.mark.asyncio
@@ -263,7 +265,6 @@ async def test_workflow_handles_rate_limit():
 
 @pytest.mark.asyncio
 async def test_workflow_handles_generation_failure():
-    """Test that workflow mode handles generation failures identically to legacy mode."""
     with patch("src.generator.create_llm") as mock_create_llm:
         mock_llm = AsyncMock()
         mock_create_llm.return_value = mock_llm

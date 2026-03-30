@@ -1,7 +1,13 @@
-from langgraph.graph import StateGraph, END
 from langchain_core.language_models.chat_models import BaseChatModel
+from langgraph.graph import END, StateGraph
+
+from .nodes import (
+    collect_user_input,
+    generate_final_document,
+    generate_question,
+    get_next_step,
+)
 from .state import RoleDesignState
-from .nodes import get_next_step, collect_user_input, generate_question, generate_final_document
 
 
 def should_continue(state: RoleDesignState) -> str:
@@ -13,7 +19,9 @@ def should_continue(state: RoleDesignState) -> str:
         return "ask"
 
 
-async def ask_question_node(state: RoleDesignState, llm: BaseChatModel) -> RoleDesignState:
+async def ask_question_node(
+    state: RoleDesignState, llm: BaseChatModel
+) -> RoleDesignState:
     """Generate the next question (output to user)."""
     # Question generation happens before human input
     state.question = await generate_question(state, llm)

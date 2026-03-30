@@ -1,6 +1,6 @@
 from pathlib import Path
+
 from src.scanner import RoleScanner
-from src.models import RoleMeta
 
 TEST_DIR = Path(__file__).parent / "data"
 

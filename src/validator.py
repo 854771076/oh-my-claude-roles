@@ -1,8 +1,11 @@
 import json
+
 import yaml
-from jsonschema import validate, ValidationError as SchemaValidationError
-from .models import ToolComponent
+from jsonschema import ValidationError as SchemaValidationError
+from jsonschema import validate
+
 from .exceptions import ValidationError
+from .models import ToolComponent
 
 # JSON Schemas for Claude Code components
 # HOOK_SCHEMA = {
@@ -66,12 +69,12 @@ class OutputValidator:
         except SchemaValidationError as e:
             raise ValidationError(f"Schema validation failed for {component.type}: {e}")
 
-    def _validate_json(self, content: str, schema: dict) -> bool:
+    def _validate_json(self, content: str, schema: dict={}) -> bool:
         """Validate JSON against schema"""
         # Clean content: extract from code blocks if present
         content = self._extract_code_block(content)
         try:
-            data = json.loads(content)
+            json.loads(content)
             # validate(instance=data, schema=schema)
             return True
         except json.JSONDecodeError as e:

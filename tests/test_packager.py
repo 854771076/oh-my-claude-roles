@@ -1,8 +1,9 @@
 import tempfile
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+
+from src.models import PackageMeta, RoleMeta, ToolComponent
 from src.packager import PackageCache
-from src.models import RoleMeta, PackageMeta, ToolComponent
 
 
 def test_save_and_get():
@@ -44,15 +45,6 @@ def test_save_and_get():
 def test_is_latest():
     with tempfile.TemporaryDirectory() as tmpdir:
         cache = PackageCache(packages_dir=tmpdir)
-        role = RoleMeta(
-            name="python",
-            category="backend",
-            display_name="Python",
-            description="Python",
-            source_path="test.md",
-            source_hash="abc123",
-        )
-        # We can't test without actual save, but the logic is simple - just check function accepts call
         assert cache is not None
 
 
@@ -131,8 +123,6 @@ def test_versioned_cache_save_and_get():
 
 def test_backward_compatibility_legacy_cache():
     """Test that legacy unversioned cache can still be read."""
-    import json
-    from pathlib import Path
 
     with tempfile.TemporaryDirectory() as tmpdir:
         cache = PackageCache(packages_dir=tmpdir)
@@ -188,8 +178,6 @@ def test_backward_compatibility_legacy_cache():
 
 def test_list_cached_includes_both_versioned_and_legacy():
     """Test that list_cached finds both versioned and legacy caches."""
-    import json
-    from pathlib import Path
 
     with tempfile.TemporaryDirectory() as tmpdir:
         cache = PackageCache(packages_dir=tmpdir)

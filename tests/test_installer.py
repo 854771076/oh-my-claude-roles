@@ -1,5 +1,3 @@
-import tempfile
-from pathlib import Path
 from src.installer import ToolInstaller
 from src.models import ToolComponent
 
