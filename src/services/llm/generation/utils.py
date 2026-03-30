@@ -102,8 +102,8 @@ def _get_extension(component_type: str) -> str:
         "claude_md": "md",
         "hooks": "json",
         "commands": "md",
-        "agents": "json",
-        "rules": "yaml",
+        "agents": "md",
+        "rules": "md",
         "skills": "md",
     }
     return ext_map.get(component_type, "md")
