@@ -25,7 +25,24 @@ class CLIRoleDesignChat:
         output_path: Optional[str] = None,
     ) -> Optional[str]:
         """Run the interactive chat session."""
-        state = RoleDesignState()
+        state = RoleDesignState(
+            name=None,
+            display_name=None,
+            description=None,
+            category=None,
+            tags=[],
+            target_domain=None,
+            tech_stack=None,
+            coding_standards=None,
+            custom_content=None,
+            project_scale=None,
+            team_size=None,
+            compliance_requirements=None,
+            question=None,
+            conversation_history=[],
+            final_document=None,
+            output_path=None,
+        )
 
         # Show welcome
         welcome = load_prompt("welcome.md")

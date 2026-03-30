@@ -43,6 +43,7 @@ class RoleDesignState(BaseModel):
     conversation_history: list[dict] = Field(
         default_factory=list, description="Conversation history"
     )
+    question: str | None = Field(None, description="Current question to ask user")
 
     # Final output
     final_document: str | None = Field(

@@ -69,7 +69,8 @@
       "Bash(python -m pip install --upgrade build)",
       "Bash(python -m build)",
       "Bash(python -m pip install --upgrade twine)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(mypy src/)"
     ]
   }
 }

@@ -85,7 +85,14 @@ async def generate_question(
     )
 
     response = await llm.ainvoke([HumanMessage(content=prompt)])
-    return response.content.strip()
+    if isinstance(response.content, str):
+        return response.content.strip()
+    else:
+        content = "".join(
+            chunk if isinstance(chunk, str) else str(chunk)
+            for chunk in response.content
+        )
+        return content.strip()
 
 
 async def generate_final_document(
@@ -129,7 +136,14 @@ custom_content:
 
     prompt = template.format(collected_info=collected_info)
     response = await llm.ainvoke([HumanMessage(content=prompt)])
-    content = response.content.strip()
+    if isinstance(response.content, str):
+        content = response.content.strip()
+    else:
+        content = "".join(
+            chunk if isinstance(chunk, str) else str(chunk)
+            for chunk in response.content
+        )
+        content = content.strip()
 
     # Remove wrapping code block if present
     if content.startswith("```"):

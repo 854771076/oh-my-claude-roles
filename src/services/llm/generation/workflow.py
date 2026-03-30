@@ -2,6 +2,7 @@ from typing import List, Optional, TypedDict
 
 from langchain_core.language_models.chat_models import BaseChatModel
 from langgraph.graph import END, StateGraph
+from langgraph.graph.state import CompiledStateGraph
 
 from src.models import (
     PackageMeta,
@@ -36,8 +37,8 @@ class GenerationWorkflowState(TypedDict):
 def create_generation_workflow(
     llm: BaseChatModel,
     validator: OutputValidator,
-    concurrency: int = None,
-) -> StateGraph:
+    concurrency: Optional[int] = None,
+) -> CompiledStateGraph:
     """Create LangGraph workflow for complete tool package generation."""
 
     workflow = StateGraph(GenerationWorkflowState)

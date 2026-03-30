@@ -55,6 +55,8 @@ async def parallel_generation_node(state: "GenerationWorkflowState") -> dict:
         f"{len(other_components)} first, "
         f"CLAUDE.md generated last for {role.category}/{role.name}"
     )
+    assert llm is not None
+    assert source_content is not None
     semaphore = asyncio.Semaphore(concurrency)
 
     @tenacity.retry(
@@ -70,7 +72,14 @@ async def parallel_generation_node(state: "GenerationWorkflowState") -> dict:
         logger.debug(f"Calling LLM with {len(prompt)} character prompt")
         try:
             response = await llm.ainvoke([HumanMessage(content=prompt)])
-            content = response.content.strip()
+            if isinstance(response.content, str):
+                content = response.content.strip()
+            else:
+                # If content is a list, join it to string
+                content = "".join(
+                    chunk if isinstance(chunk, str) else str(chunk)
+                    for chunk in response.content
+                ).strip()
             logger.debug(f"LLM response received: {len(content)} characters")
             return content
         except TimeoutError:
@@ -87,7 +96,7 @@ async def parallel_generation_node(state: "GenerationWorkflowState") -> dict:
         comp_type: str,
         all_components: list[str],
         generated_components: list[ToolComponent] | None = None,
-    ) -> ToolComponent | None:
+    ) -> list[ToolComponent] | None:
         async with semaphore:
             logger.info(f"Generating component: {comp_type}")
             prompt = build_prompt(
@@ -113,6 +122,7 @@ async def parallel_generation_node(state: "GenerationWorkflowState") -> dict:
         tasks = [generate_one(comp, requested, None) for comp in other_components]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
+        from typing import cast
         for comp_type, result in zip(other_components, results):
             if isinstance(result, Exception):
                 logger.exception(
@@ -121,10 +131,13 @@ async def parallel_generation_node(state: "GenerationWorkflowState") -> dict:
                 failed.append(comp_type)
                 continue
             if result:
-                if isinstance(result, list):
-                    generated.extend(result)
-                else:
-                    generated.append(result)
+                # result can't be Exception here because we checked above
+                result_components = cast(list[ToolComponent] | ToolComponent | None, result)
+                if result_components:
+                    if isinstance(result_components, list):
+                        generated.extend(result_components)
+                    else:
+                        generated.append(result_components)
 
     # Generate CLAUDE.md last - now it gets the list of all other generated files
     if has_claude_md:
@@ -159,6 +172,7 @@ async def validate_components_node(state: "GenerationWorkflowState") -> dict:
     generated = state["generated_components"]
     failed = state["failed_components"]
 
+    assert validator is not None
     logger.info(f"Validating {len(generated)} generated components")
     valid_components: List[ToolComponent] = []
     for comp in generated:

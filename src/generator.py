@@ -11,10 +11,13 @@ class ToolGenerator:
     """Generate tool components using LLM"""
 
     def __init__(self, use_workflow: bool = True):
+        from langgraph.graph.state import CompiledStateGraph
+
         self.llm = create_llm()
         self.concurrency = settings.llm_concurrency
         self.validator = OutputValidator()
         self.use_workflow = use_workflow
+        self.workflow: CompiledStateGraph | None = None
         if self.use_workflow:
             self.workflow = create_generation_workflow(
                 llm=self.llm,
@@ -30,6 +33,8 @@ class ToolGenerator:
         """Generate complete tool package for a role"""
         if self.use_workflow:
             return await self.generate_package_with_workflow(role, components)
+        # Legacy mode not implemented anymore - always use workflow
+        raise NotImplementedError("Legacy generation mode is deprecated")
 
 
     async def generate_package_with_workflow(
@@ -54,5 +59,6 @@ class ToolGenerator:
             "_concurrency": self.concurrency,
         }
 
+        assert self.workflow is not None
         final_state = await self.workflow.ainvoke(initial_state)
         return final_state["package_meta"], final_state["validated_components"]

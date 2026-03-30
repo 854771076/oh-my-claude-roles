@@ -1,0 +1,23 @@
+{
+  "role": {
+    "name": "TypeScript",
+    "category": "fullstack",
+    "display_name": "TypeScript + Next.js 企业级全栈开发规范",
+    "description": "**文档版本**: v1.0.0",
+    "source_path": "C:\\Users\\Administrator\\Desktop\\oh-my-claude-roles\\roles\\fullstack\\TypeScript.md",
+    "source_hash": "c396ac6e489c22d6",
+    "tags": [],
+    "version": "1.0.0"
+  },
+  "version": "1.0.0",
+  "generated_at": "2026-03-30T22:15:35.622288",
+  "llm_provider": "openai",
+  "llm_model": "ark-code-latest",
+  "components": [
+    "claude_md",
+    "rules",
+    "skills",
+    "commands",
+    "agents"
+  ]
+}

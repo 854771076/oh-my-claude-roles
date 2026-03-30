@@ -276,6 +276,13 @@ pytest tests/ -v
 
 # 查看覆盖率
 pytest tests/ -v --cov=src --cov-report=term --cov-report=html
+
+# 类型检查（mypy）
+mypy src/
+
+# 代码风格检查（ruff）
+ruff check src/
+ruff check src/ --fix  # 自动修复可修复的问题
 ```
 
 ## 📊 测试覆盖率

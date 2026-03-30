@@ -1,8 +1,8 @@
 from langchain_core.language_models.chat_models import BaseChatModel
 from langgraph.graph import END, StateGraph
+from langgraph.graph.state import CompiledStateGraph
 
 from .nodes import (
-    collect_user_input,
     generate_final_document,
     generate_question,
     get_next_step,
@@ -16,7 +16,39 @@ def should_continue(state: RoleDesignState) -> str:
     if next_step == "generate_final":
         return "generate"
     else:
-        return "ask"
+        return "collect_input"
+
+
+def create_role_design_graph(llm: BaseChatModel) -> CompiledStateGraph:
+    """Create the role design LangGraph."""
+    builder = StateGraph(RoleDesignState)
+
+    # Add nodes - use partial application for passing llm
+    from functools import partial
+    builder.add_node(
+        "ask_question",
+        partial(ask_question_node, llm=llm)
+    )
+    builder.add_node("collect_input", collect_input_node)
+    builder.add_node(
+        "generate_final",
+        partial(generate_final_node, llm=llm)
+    )
+
+    # Add edges
+    builder.set_entry_point("ask_question")
+    builder.add_conditional_edges(
+        "ask_question",
+        should_continue,
+        {
+            "collect_input": "collect_input",
+            "generate": "generate_final",
+        },
+    )
+    builder.add_edge("collect_input", "ask_question")
+    builder.add_edge("generate_final", END)
+
+    return builder.compile()
 
 
 async def ask_question_node(
@@ -30,10 +62,9 @@ async def ask_question_node(
 
 async def collect_input_node(
     state: RoleDesignState,
-    user_input: str,
 ) -> RoleDesignState:
-    """Collect user input and update state."""
-    return collect_user_input(state, user_input)
+    """No-op node - user input is collected externally and state is already updated."""
+    return state
 
 
 async def generate_final_node(
@@ -44,28 +75,3 @@ async def generate_final_node(
     final_doc = await generate_final_document(state, llm)
     state.final_document = final_doc
     return state
-
-
-def create_role_design_graph(llm: BaseChatModel) -> StateGraph:
-    """Create the role design LangGraph."""
-    builder = StateGraph(RoleDesignState)
-
-    # Add nodes
-    builder.add_node("ask_question", lambda state: ask_question_node(state, llm))
-    builder.add_node("collect_input", collect_input_node)
-    builder.add_node("generate_final", lambda state: generate_final_node(state, llm))
-
-    # Add edges
-    builder.set_entry_point("ask_question")
-    builder.add_conditional_edges(
-        "ask_question",
-        should_continue,
-        {
-            "ask": "collect_input",
-            "generate": "generate_final",
-        },
-    )
-    builder.add_edge("collect_input", "ask_question")
-    builder.add_edge("generate_final", END)
-
-    return builder.compile()
