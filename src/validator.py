@@ -7,61 +7,41 @@ from .exceptions import ValidationError
 # JSON Schemas for Claude Code components
 HOOK_SCHEMA = {
     "type": "object",
-    "required": ["name", "description", "triggers", "hooks"],
+    "required": ["hooks"],
     "properties": {
-        "name": {"type": "string"},
         "description": {"type": "string"},
-        "triggers": {"type": "array", "items": {"type": "string"}},
-        "matcher": {"type": "string"},
         "hooks": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "required": ["type", "command"],
-                "properties": {
-                    "type": {"type": "string"},
-                    "command": {"type": "string"},
-                    "timeout": {"type": "integer"},
+            "type": "object",
+            "additionalProperties": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "matcher": {"type": "string"},
+                        "hooks": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "required": ["type"],
+                                "oneOf": [
+                                    {"required": ["command"]},
+                                    {"required": ["prompt"]}
+                                ],
+                                "properties": {
+                                    "type": {"type": "string", "enum": ["command", "prompt"]},
+                                    "command": {"type": "string"},
+                                    "prompt": {"type": "string"},
+                                    "timeout": {"type": "integer"},
+                                },
+                            },
+                        },
+                    },
                 },
             },
         },
     },
 }
 
-AGENT_SCHEMA = {
-    "type": "object",
-    "required": ["name", "description", "system_prompt"],
-    "properties": {
-        "name": {"type": "string"},
-        "description": {"type": "string"},
-        "model": {"type": "string"},
-        "system_prompt": {"type": "string"},
-        "tools": {"type": "array", "items": {"type": "string"}},
-        "allowed_paths": {"type": "array", "items": {"type": "string"}},
-    },
-}
-
-RULE_SCHEMA = {
-    "type": "object",
-    "required": ["name", "rules"],
-    "properties": {
-        "name": {"type": "string"},
-        "version": {"type": "string"},
-        "rules": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "required": ["id", "description", "pattern", "severity"],
-                "properties": {
-                    "id": {"type": "string"},
-                    "description": {"type": "string"},
-                    "pattern": {"type": "string"},
-                    "severity": {"type": "string", "enum": ["error", "warning", "info"]},
-                },
-            },
-        },
-    },
-}
 
 
 class OutputValidator:

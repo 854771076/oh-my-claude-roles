@@ -17,23 +17,24 @@
 
 ### 支持的事件类型（只能使用以下）
 
-| 事件                  | 触发时机                                                              | 匹配器                                             |
-| --------------------- | --------------------------------------------------------------------- | -------------------------------------------------- |
-| `PreToolUse`         | 工具执行前                                                            | 工具名称                                           |
-| `PostToolUse`        | 工具执行后                                                            | 工具名称                                           |
-| `PermissionRequest`  | 权限对话框显示时                                                      | 工具名称                                           |
-| `Notification`       | 发送通知时                                                            | 通知类型                                           |
-| `UserPromptSubmit`   | 用户提交提示时                                                        | 无                                                 |
-| `Stop`               | 主代理完成响应时                                                      | 无                                                 |
-| `SubagentStop`       | Subagent 完成时                                                       | 代理名称                                           |
-| `PreCompact`         | 压缩操作前                                                            | `manual` / `auto`                                |
-| `Setup`              | 仓库初始化/维护时                                                      | `init` / `maintenance`                           |
-| `SessionStart`       | 会话开始或恢复时                                                      | `startup` / `resume` / `clear` / `compact`       |
-| `SessionEnd`         | 会话结束时                                                            | 退出原因                                           |
+| 事件                  | 触发时机          | 匹配器                                             |
+| --------------------- | ----------------- | -------------------------------------------------- |
+| `PreToolUse`        | 工具执行前        | 工具名称                                           |
+| `PostToolUse`       | 工具执行后        | 工具名称                                           |
+| `PermissionRequest` | 权限对话框显示时  | 工具名称                                           |
+| `Notification`      | 发送通知时        | 通知类型                                           |
+| `UserPromptSubmit`  | 用户提交提示时    | 无                                                 |
+| `Stop`              | 主代理完成响应时  | 无                                                 |
+| `SubagentStop`      | Subagent 完成时   | 代理名称                                           |
+| `PreCompact`        | 压缩操作前        | `manual` / `auto`                              |
+| `Setup`             | 仓库初始化/维护时 | `init` / `maintenance`                         |
+| `SessionStart`      | 会话开始或恢复时  | `startup` / `resume` / `clear` / `compact` |
+| `SessionEnd`        | 会话结束时        | 退出原因                                           |
 
 ### 必须字段
 
 每个 hook 必须包含：
+
 - `type`: 必须是 `command` 或 `prompt`
 - `command` 或 `prompt`: 对应内容二选一
 - `timeout`: 超时时间（秒），建议 30-60 秒
@@ -101,5 +102,8 @@
 - 文件名只能包含字母、数字、连字符 `-`、下划线 `_` 和点 `.`
 - 不要在文件名那一行放任何其他内容
 - 每个文件必须单独开头 `## 文件名:`
+- JSON 内容必须放在 `` ```json `` 代码块内
 - 必须是合法 JSON，**不允许有尾随逗号**
+- **JSON 必须可以被标准 JSON 解析器直接解析**，不要在JSON中嵌套markdown格式
+- **绝对不要** 在JSON内容中保留markdown标题或者其他非JSON内容
 - 每个配置文件只包含一个完整的 hook 配置，单一职责

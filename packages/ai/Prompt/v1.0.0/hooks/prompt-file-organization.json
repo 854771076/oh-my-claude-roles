@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node $CLAUDE_PROJECT_DIR/.claude/hooks/check-prompt-file-structure.js",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

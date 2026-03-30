@@ -84,10 +84,11 @@ async def parallel_generation_node(state: "GenerationWorkflowState") -> dict:
         async with semaphore:
             logger.info(f"Generating component: {comp_type}")
             prompt = build_prompt(comp_type, source_content, role, all_components, generated_components)
-            logger.debug(prompt)
+            # logger.debug(prompt)
             logger.debug(f"Prompt built: {len(prompt)} characters")
             try:
                 content = await call_llm_with_retry(prompt)
+                # logger.debug(f"{comp_type}:LLM response received: {content}")
             except (LLMTimeoutError, LLMRateLimitError, GenerationFailedError) as e:
                 logger.warning(f"LLM generation failed for {comp_type}: {str(e)}")
                 return None
@@ -105,7 +106,7 @@ async def parallel_generation_node(state: "GenerationWorkflowState") -> dict:
 
         for comp_type, result in zip(other_components, results):
             if isinstance(result, Exception):
-                logger.error(f"Component generation failed: {comp_type}, error: {str(result)}")
+                logger.exception(f"Component generation failed66: {comp_type}, error: {result}")
                 failed.append(comp_type)
                 continue
             if result:
@@ -235,8 +236,13 @@ def build_prompt(
                 for comp in all_components if comp != "claude_md"
             ]
             template_vars["component_list"] = "\n".join(lines)
-    return template.format(**template_vars)
+    return teplate_format(template, template_vars)
 
+def teplate_format(template: str, template_vars: dict) -> str:
+    """Format template with variables."""
+    for key, value in template_vars.items():
+        template = template.replace(f"{key}", value)
+    return template
 
 def parse_response(component_type: str, content: str, role: RoleMeta) -> List[ToolComponent]:
     """Parse LLM response into ToolComponents. Reuses logic from ToolGenerator."""
@@ -287,7 +293,8 @@ def parse_response(component_type: str, content: str, role: RoleMeta) -> List[To
 
             # Clean filename
             filename = raw_filename.split('\n')[0]
-            filename = re.sub(r'[<>:"/\\|?*]', '', filename)
+            # Remove illegal characters for Windows file names, BUT KEEP path separators (/ \)
+            filename = re.sub(r'[<>:"\|?*]', '', filename)
             filename = filename.replace(' ', '-')
 
             # If filename is empty after cleaning, use default
@@ -301,9 +308,14 @@ def parse_response(component_type: str, content: str, role: RoleMeta) -> List[To
 
             # Remove wrapping code block if present
             if file_content.startswith("```"):
+                # Remove the opening backticks
                 first_newline = file_content.find("\n")
                 if first_newline != -1:
                     file_content = file_content[first_newline+1:].rstrip()
+                    # If the first line is just "json" (language identifier), remove it as well
+                    first_line = file_content.split('\n', 1)[0].strip()
+                    if first_line.lower() in ('json', 'yaml', 'markdown', 'md') and len(file_content.split('\n', 1)) > 1:
+                        file_content = file_content.split('\n', 1)[1].lstrip()
                 else:
                     file_content = file_content[3:].rstrip()
             file_content = file_content.rstrip()
@@ -311,6 +323,9 @@ def parse_response(component_type: str, content: str, role: RoleMeta) -> List[To
                 last_backtick = file_content.rfind("```")
                 if last_backtick > 0:
                     file_content = file_content[:last_backtick].rstrip()
+
+            # Strip any leading/trailing empty lines
+            file_content = file_content.strip()
 
             target_path = _get_target_path(component_type, filename)
             components.append(ToolComponent(
@@ -338,12 +353,8 @@ def _get_extension(component_type: str) -> str:
 
 def _get_target_path(component_type: str, filename: str) -> str:
     """Get target installation path"""
-    # If filename already contains a path (includes / or \), use it as-is
-    # This prevents double nesting when LLM already output the component type prefix
-    # Handles both forward slashes (Unix/macOS/Linux) and backslashes (Windows)
-    if '/' in filename or '\\' in filename:
-        # Normalize to forward slashes for consistent path handling across platforms
-        return filename.replace('\\', '/')
+    # Normalize to forward slashes for consistent path handling across platforms
+    filename = filename.replace('\\', '/')
     path_map = {
         "claude_md": "CLAUDE.md",
         "hooks": f"hooks/{filename}",

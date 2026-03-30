@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Setup": [
+      {
+        "matcher": "init",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node $CLAUDE_PROJECT_DIR/.claude/hooks/setup-prompt-project.js",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}
