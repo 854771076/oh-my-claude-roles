@@ -73,3 +73,25 @@ python -m twine upload dist/*
 - 版本号在 `pyproject.toml` 中修改
 - 确保 `description` 和 `readme` 信息正确
 - 上传前可以用 `twine check dist/*` 检查包是否正确
+
+## GitHub Action 自动发布
+
+本项目已配置 GitHub Action，当你推送 tag 或创建 Release 时，会自动构建并发布到 PyPI。
+
+### 配置步骤
+
+1. 在 GitHub 仓库中进入 Settings → Secrets and variables → Actions
+2. 点击 New repository secret
+3. 添加一个名为 `PYPI_API_TOKEN` 的 secret，值为你的 PyPI API Token
+
+### 使用方式
+
+1. 修改 `pyproject.toml` 中的版本号
+2. 创建并推送 tag:
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+3. GitHub Action 会自动构建并发布到 PyPI
+
+或者，你可以在 GitHub 上手动创建一个 Release，Action 也会自动触发发布。
