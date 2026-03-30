@@ -6,6 +6,7 @@ from langchain_core.language_models.chat_models import BaseChatModel
 from rich.console import Console
 from rich.markdown import Markdown
 
+from ....config import settings
 from .graph import create_role_design_graph
 from .nodes import load_prompt
 from .state import RoleDesignState
@@ -93,8 +94,8 @@ class CLIRoleDesignChat:
         # Get output path if not provided
         if output_path is None:
             default_path = (
-                f"roles/{state.category}/{state.name}.md" if state.category
-                else f"roles/{state.name}.md"
+                f"{settings.user_roles_dir}/{state.category}/{state.name}.md" if state.category
+                else f"{settings.user_roles_dir}/{state.name}.md"
             )
             console.print(
                 f"\nWhere would you like to save this file? (default: {default_path})"

@@ -12,17 +12,38 @@ from .models import RoleMeta
 class RoleScanner:
     """Scan roles directory and parse role documents"""
 
-    def __init__(self, roles_dir: str | None = None):
+    def __init__(self, roles_dir: str | None = None, include_user_dir: bool = True):
         self.roles_dir = Path(roles_dir or settings.roles_dir).resolve()
+        self.include_user_dir = include_user_dir
 
     def scan_all(self) -> List[RoleMeta]:
-        """Scan all roles in roles directory"""
+        """Scan all roles in multiple directories (user dir + current dir)"""
         roles: List[RoleMeta] = []
 
-        if not self.roles_dir.exists():
+        # Scan user directory first
+        if self.include_user_dir and settings.user_roles_dir.exists():
+            user_roles = self._scan_directory(settings.user_roles_dir)
+            roles.extend(user_roles)
+
+        # Scan current directory
+        current_roles = self._scan_directory(self.roles_dir)
+
+        # Merge current roles, replacing duplicates from user directory
+        role_map = {f"{r.category}/{r.name}": r for r in roles}
+        for role in current_roles:
+            key = f"{role.category}/{role.name}"
+            role_map[key] = role
+
+        return list(role_map.values())
+
+    def _scan_directory(self, directory: Path) -> List[RoleMeta]:
+        """Scan roles in a single directory"""
+        roles: List[RoleMeta] = []
+
+        if not directory.exists():
             return roles
 
-        for category_dir in self.roles_dir.iterdir():
+        for category_dir in directory.iterdir():
             if not category_dir.is_dir() or category_dir.name.startswith("."):
                 continue
             for doc_file in category_dir.glob("*.md"):

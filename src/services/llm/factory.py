@@ -32,7 +32,6 @@ def create_llm() -> BaseChatModel:
             api_key=api_key_secret,
             base_url=base_url,
             timeout=timeout,
-            stop=None,
         )
     elif provider == "azure":
         from langchain_openai import AzureChatOpenAI
