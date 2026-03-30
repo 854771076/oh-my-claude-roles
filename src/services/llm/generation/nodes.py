@@ -330,7 +330,7 @@ def _get_extension(component_type: str) -> str:
         "hooks": "json",
         "commands": "md",
         "agents": "json",
-        "rules": "yaml",
+        "rules": "md",
         "skills": "md",
     }
     return ext_map.get(component_type, "md")
