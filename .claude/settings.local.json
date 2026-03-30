@@ -68,7 +68,8 @@
       "Bash(python -m ruff check src/services/llm/generation/nodes.py src/validator.py src/services/llm/generation/prompts/agents.md)",
       "Bash(python -m pip install --upgrade build)",
       "Bash(python -m build)",
-      "Bash(python -m pip install --upgrade twine)"
+      "Bash(python -m pip install --upgrade twine)",
+      "WebSearch"
     ]
   }
 }
