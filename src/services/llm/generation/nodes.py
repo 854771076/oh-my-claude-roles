@@ -329,7 +329,7 @@ def _get_extension(component_type: str) -> str:
         "claude_md": "md",
         "hooks": "json",
         "commands": "md",
-        "agents": "json",
+        "agents": "md",
         "rules": "md",
         "skills": "md",
     }
