@@ -7,7 +7,7 @@
 <p align="center">
 <a href="https://pypi.org/project/oh-my-claude-roles"><img src="https://img.shields.io/pypi/v/oh-my-claude-roles.svg" alt="PyPI version"></a>
 <a href="https://pypi.org/project/oh-my-claude-roles"><img src="https://img.shields.io/pypi/pyversions/oh-my-claude-roles.svg" alt="Python versions"></a>
-<a href="https://github.com/charleydev/oh-my-claude-roles/actions"><img src="https://github.com/charleydev/oh-my-claude-roles/workflows/tests/badge.svg" alt="Tests"></a>
+<a href="https://github.com/charleydev/oh-my-claude-roles/actions">
 <a href="https://github.com/charleydev/oh-my-claude-roles/blob/master/LICENSE"><img src="https://img.shields.io/github/license/charleydev/oh-my-claude-roles.svg" alt="License"></a>
 </p>
 
@@ -76,17 +76,17 @@ cp .env.example .env
 
 配置项说明:
 
-| 环境变量 | 说明 | 默认值 |
-|---------|------|--------|
-| `OH_ROLES_LLM_PROVIDER` | LLM 提供商: openai, anthropic, azure, gemini, ollama | `openai` |
-| `OH_ROLES_LLM_API_KEY` | LLM API 密钥 | - |
-| `OH_ROLES_LLM_MODEL` | 模型名称 | `gpt-4o` |
-| `OH_ROLES_LLM_BASE_URL` | 自定义 API 地址（代理/本地模型） | - |
-| `OH_ROLES_LLM_TIMEOUT` | API 超时（秒） | `120` |
-| `OH_ROLES_LLM_MAX_RETRIES` | 失败重试次数 | `3` |
-| `OH_ROLES_LLM_CONCURRENCY` | 并发生成数 | `3` |
-| `OH_ROLES_ROLES_DIR` | 角色文档存放目录 | `roles` |
-| `OH_ROLES_PACKAGES_DIR` | 缓存目录 | `packages` |
+| 环境变量                     | 说明                                                 | 默认值       |
+| ---------------------------- | ---------------------------------------------------- | ------------ |
+| `OH_ROLES_LLM_PROVIDER`    | LLM 提供商: openai, anthropic, azure, gemini, ollama | `openai`   |
+| `OH_ROLES_LLM_API_KEY`     | LLM API 密钥                                         | -            |
+| `OH_ROLES_LLM_MODEL`       | 模型名称                                             | `gpt-4o`   |
+| `OH_ROLES_LLM_BASE_URL`    | 自定义 API 地址（代理/本地模型）                     | -            |
+| `OH_ROLES_LLM_TIMEOUT`     | API 超时（秒）                                       | `120`      |
+| `OH_ROLES_LLM_MAX_RETRIES` | 失败重试次数                                         | `3`        |
+| `OH_ROLES_LLM_CONCURRENCY` | 并发生成数                                           | `3`        |
+| `OH_ROLES_ROLES_DIR`       | 角色文档存放目录                                     | `roles`    |
+| `OH_ROLES_PACKAGES_DIR`    | 缓存目录                                             | `packages` |
 
 ## 🚀 使用
 
@@ -97,6 +97,7 @@ oh-roles install
 ```
 
 这个命令会:
+
 1. 扫描 `roles/` 目录下所有角色文档
 2. 交互式选择要安装的角色
 3. 选择要安装哪些组件类型
@@ -124,6 +125,7 @@ oh-roles create roles/my-role.md # 指定输出路径
 ```
 
 这个命令会:
+
 1. 启动交互式 AI 对话，引导你完成角色设计
 2. 一步步询问角色的领域、技术栈、规范要求
 3. 自动生成完整的角色文档 Markdown 文件
@@ -152,15 +154,16 @@ oh-roles clean backend/python  # 清理指定角色
 
 仓库已经内置了几个开箱可用的角色规范：
 
-| 角色 | 领域 | 说明 |
-|------|------|------|
-| `backend/python` | 后端 | Python 企业级后端开发规范 |
-| `fullstack/typescript` | 全栈 | TypeScript 全栈开发规范 |
-| `frontend/vue3` | 前端 | Vue 3 + TypeScript 全栈开发助手规范 |
-| `blockchain/ETHBlockChain` | 区块链 | 以太坊 Solidity 智能合约开发 |
-| `ai/Prompt` | AI 提示词 | AI 提示词工程企业级开发规范 |
+| 角色                         | 领域      | 说明                                |
+| ---------------------------- | --------- | ----------------------------------- |
+| `backend/python`           | 后端      | Python 企业级后端开发规范           |
+| `fullstack/typescript`     | 全栈      | TypeScript 全栈开发规范             |
+| `frontend/vue3`            | 前端      | Vue 3 + TypeScript 全栈开发助手规范 |
+| `blockchain/ETHBlockChain` | 区块链    | 以太坊 Solidity 智能合约开发        |
+| `ai/Prompt`                | AI 提示词 | AI 提示词工程企业级开发规范         |
 
 直接安装使用：
+
 ```bash
 oh-roles install backend/python
 ```
@@ -192,6 +195,7 @@ version: 1.0.0
 ```
 
 如果不写 frontmatter 也可以，Oh-My-Claude-Roles 会自动从内容提取:
+
 - 名称 = 文件名
 - 标题 = 第一个 `#` 标题
 - 描述 = 标题后的第一段
@@ -280,11 +284,13 @@ pytest tests/ -v --cov=src --cov-report=term --cov-report=html
 当前测试覆盖率: **~59%** overall.
 
 未覆盖部分主要是:
+
 - `cli.py` - CLI 接口（难以自动化测试，手动验证通过）
 - `logger.py` - 简单日志配置
 - `prompts/` - 纯提示词模板
 
 所有核心业务逻辑模块测试覆盖率:
+
 - `config.py` - 100%
 - `exceptions.py` - 100%
 - `models.py` - 100%
@@ -294,14 +300,14 @@ pytest tests/ -v --cov=src --cov-report=term --cov-report=html
 
 ## 🎯 支持的 Claude Code 组件
 
-| 组件类型 | 说明 |
-|---------|------|
-| `CLAUDE.md` | 核心指令，Claude 每次都会读取 |
-| `hooks` | Hooks 脚本，在特定时机自动触发 |
-| `commands` | 斜杠命令 |
-| `agents` | 子代理配置 |
-| `rules` | 自动检测的代码规则 |
-| `skills` | 自动触发的技能模块 |
+| 组件类型      | 说明                           |
+| ------------- | ------------------------------ |
+| `CLAUDE.md` | 核心指令，Claude 每次都会读取  |
+| `hooks`     | Hooks 脚本，在特定时机自动触发 |
+| `commands`  | 斜杠命令                       |
+| `agents`    | 子代理配置                     |
+| `rules`     | 自动检测的代码规则             |
+| `skills`    | 自动触发的技能模块             |
 
 ## ⭐ 支持
 
