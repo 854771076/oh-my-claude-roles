@@ -77,9 +77,9 @@ class OutputValidator:
             elif component.type == "commands":
                 return self._validate_markdown(component.content)
             elif component.type == "agents":
-                return self._validate_json(component.content, AGENT_SCHEMA)
+                return self._validate_markdown(component.content)
             elif component.type == "rules":
-                return self._validate_yaml(component.content, RULE_SCHEMA)
+                return self._validate_markdown(component.content)
             elif component.type == "skills":
                 return self._validate_markdown(component.content)
             return True
