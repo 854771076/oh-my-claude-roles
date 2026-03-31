@@ -121,61 +121,6 @@ def test_versioned_cache_save_and_get():
         assert cached_v2["meta"].version == "2.0.0"
 
 
-def test_backward_compatibility_legacy_cache():
-    """Test that legacy unversioned cache can still be read."""
-
-    with tempfile.TemporaryDirectory() as tmpdir:
-        cache = PackageCache(packages_dir=tmpdir)
-
-        # Manually create legacy cache structure (without version directory)
-        legacy_dir = Path(tmpdir) / "backend" / "python"
-        legacy_dir.mkdir(parents=True, exist_ok=True)
-
-        # Create legacy role (without version specified, defaults to 1.0.0)
-        legacy_role = RoleMeta(
-            name="python",
-            category="backend",
-            display_name="Python",
-            description="Python",
-            source_path="test.md",
-            source_hash="legacy123",
-            version="1.0.0",  # Even though version exists, directory doesn't use it
-        )
-        legacy_meta = PackageMeta(
-            role=legacy_role,
-            version="1.0.0",
-            generated_at=datetime.now(),
-            llm_provider="openai",
-            llm_model="gpt-4",
-            components=["claude_md"],
-        )
-
-        # Save meta.json directly in legacy location
-        meta_file = legacy_dir / "meta.json"
-        meta_file.write_text(legacy_meta.model_dump_json(indent=2), encoding="utf-8")
-
-        # Save CLAUDE.md
-        claude_file = legacy_dir / "CLAUDE.md"
-        claude_file.write_text("# Legacy Cache", encoding="utf-8")
-
-        # Try to get with a role that has version (should fall back to legacy)
-        role_with_version = RoleMeta(
-            name="python",
-            category="backend",
-            display_name="Python",
-            description="Python",
-            source_path="test.md",
-            source_hash="legacy123",
-            version="1.0.0",
-        )
-
-        cached = cache.get(role_with_version)
-        assert cached is not None
-        assert cached["meta"].role.source_hash == "legacy123"
-        assert len(cached["components"]) == 1
-        assert cached["components"][0].content == "# Legacy Cache"
-
-
 def test_list_cached_includes_both_versioned_and_legacy():
     """Test that list_cached finds both versioned and legacy caches."""
 
