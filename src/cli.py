@@ -124,7 +124,6 @@ def check_and_configure_env() -> None:
     from .config import Settings
     settings = Settings()
 
-
 def version_callback(value: bool):
     if value:
         console.print(f"Oh-My-Claude-Roles version: {__version__}")
